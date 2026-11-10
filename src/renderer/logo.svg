@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Ferahla</title>
+  <!-- Ferahla: çoğu boş (soluk) bir disk halkası, küçük dolu yayı ve içinden geçen esinti. "Diskiniz nefes alıyor." -->
+  <defs>
+    <linearGradient id="fg" x1="0.12" y1="0" x2="0.88" y2="1">
+      <stop offset="0" stop-color="#55D3B3"/>
+      <stop offset="0.55" stop-color="#1E9480"/>
+      <stop offset="1" stop-color="#0D5D53"/>
+    </linearGradient>
+    <linearGradient id="hl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="116" fill="url(#fg)"/>
+  <rect x="24" y="24" width="464" height="464" rx="116" fill="url(#hl)"/>
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="262" cy="256" r="150" stroke-width="36" stroke-opacity="0.32"/>
+    <path d="M262 106 A150 150 0 0 1 404 208" stroke-width="36"/>
+    <path d="M104 232 H302 a42 42 0 1 0 -42 -42" stroke-width="36"/>
+    <path d="M104 304 H336 a42 42 0 1 1 -42 42" stroke-width="36"/>
+  </g>
+</svg>
