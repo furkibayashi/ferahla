@@ -1,0 +1,20 @@
+{
+  "name": "ferahla",
+  "productName": "Ferahla",
+  "version": "0.1.0",
+  "description": "Reklamsız, veri toplamayan Windows PC bakım aracı: disk haritası, güvenli temizlik, büyük/kopya dosyalar, başlangıç programları.",
+  "main": "main.js",
+  "author": "Ferahla",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/unit",
+    "test:e2e": "playwright test tests/e2e",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^26.18.0"
+  }
+}
