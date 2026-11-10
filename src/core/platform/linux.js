@@ -32,7 +32,8 @@ function parseProcMounts(text) {
     const mnt = parts[1].replace(/\\040/g, ' ').replace(/\\011/g, '\t').replace(/\\134/g, '\\');
     const type = parts[2];
     if (!REAL_FS.has(type)) continue;
-    if (/^\/(proc|sys|dev|run|snap|boot\/efi)(\/|$)/.test(mnt)) continue;
+    // Yalnızca kullanıcıya anlamlı bağlama noktaları: kök, /home ve çıkarılabilir/ek diskler.
+    if (!(mnt === '/' || mnt === '/home' || /^\/(media|mnt|run\/media)\/./.test(mnt))) continue;
     if (type === 'overlay' && mnt !== '/') continue;
     if (seen.has(mnt)) continue;
     seen.add(mnt);
@@ -58,7 +59,7 @@ async function listDrives() {
       const key = `${s.type}:${s.blocks}:${s.bfree}`;
       if (seenDev.has(key) && m !== '/') continue;
       seenDev.add(key);
-      out.push({ path: m, label: m === '/' ? 'Sistem' : P.basename(m), totalBytes: total, freeBytes: s.bavail * s.bsize });
+      out.push({ path: m, label: m === '/' ? 'Linux' : P.basename(m), totalBytes: total, freeBytes: s.bavail * s.bsize });
     } catch (e) { /* erişilemiyor */ }
   }
   return out;

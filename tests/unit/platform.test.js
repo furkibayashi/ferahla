@@ -83,8 +83,10 @@ test('linux: /proc/mounts ayrıştırma ve FERAHLA_TEST_ROOT yönlendirmesi', as
     '/dev/sdb1 /media/ali/USB\\040Bellek vfat rw 0 0',
     'tmpfs /run tmpfs rw 0 0',
     '/dev/sda2 /boot/efi vfat rw 0 0',
+    '/dev/vdb /opt/arac ext4 rw 0 0',
+    '/dev/sdc1 /run/media/ali/Disk ntfs3 rw 0 0',
   ].join('\n');
-  assert.deepEqual(linux.parseProcMounts(mounts), ['/', '/home', '/media/ali/USB Bellek']);
+  assert.deepEqual(linux.parseProcMounts(mounts), ['/', '/home', '/media/ali/USB Bellek', '/run/media/ali/Disk']);
   const env = { FERAHLA_TEST_ROOT: '/x/test' };
   assert.deepEqual((await linux.cleanupRoots('user-temp', { env })).map((r) => r.path), ['/x/test/tmp']);
   assert.deepEqual((await linux.cleanupRoots('thumbnails', { env })).map((r) => r.path), ['/x/test/home/.cache/thumbnails']);

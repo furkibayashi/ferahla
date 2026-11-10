@@ -33,14 +33,14 @@ function findLarge(tree, { minBytes = 100 * 1024 * 1024, limit = 100, types, exc
   const typeSet = Array.isArray(types) && types.length ? new Set(types) : null;
   if (rootExcluded(tree, excluded)) return [];
   const out = [];
-  tree.forEachFile((i, p) => {
+  tree.forEachFile((i, dir) => {
     const size = tree.size[i];
     if (size < minBytes) return;
     const name = tree.names[i];
     if (SKIP_FILE_NAMES.has(name.toLowerCase())) return;
     const type = fileType(name);
     if (typeSet && !typeSet.has(type)) return;
-    out.push({ path: p, name, sizeBytes: size, mtimeMs: tree.mtime[i], type });
+    out.push({ path: tree.P.join(dir, name), name, sizeBytes: size, mtimeMs: tree.mtime[i], type });
   }, makeSkipper(tree, excluded));
   out.sort((a, b) => b.sizeBytes - a.sizeBytes);
   return out.slice(0, limit);
@@ -49,11 +49,11 @@ function findLarge(tree, { minBytes = 100 * 1024 * 1024, limit = 100, types, exc
 async function findDuplicates(tree, { minBytes = 1024 * 1024, excluded, isCancelled, onProgress } = {}) {
   if (rootExcluded(tree, excluded)) return { groups: [], wastedBytes: 0 };
   const files = [];
-  tree.forEachFile((i, p) => {
+  tree.forEachFile((i, dir) => {
     const size = tree.size[i];
     if (size < minBytes) return;
     if (SKIP_FILE_NAMES.has(tree.names[i].toLowerCase())) return;
-    files.push({ path: p, size, mtimeMs: tree.mtime[i] });
+    files.push({ path: tree.P.join(dir, tree.names[i]), size, mtimeMs: tree.mtime[i] });
   }, makeSkipper(tree, excluded));
   return findDuplicateGroups(files, { minBytes, isCancelled, onProgress });
 }

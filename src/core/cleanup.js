@@ -286,9 +286,9 @@ async function cleanCategories(ids, ctx) {
     out.results.push(r);
     if (!BY_ID.has(id)) { r.error = 'unknown-category'; continue; }
     if (platform.requiresAdmin(id) && !isAdmin) { r.error = 'requires-admin'; continue; }
-    onProgress({ id, percent: 0 });
     try {
       if (id === 'recycle-bin') {
+        onProgress({ id, percent: 0 });
         const before = await platform.getRecycleBin({ env });
         if (typeof platform.emptyRecycleBin === 'function') {
           const e = await platform.emptyRecycleBin({ env });
@@ -306,6 +306,7 @@ async function cleanCategories(ids, ctx) {
       } else {
         const roots = await resolveRoots(platform, id, env);
         if (!roots) { r.error = 'not-available'; continue; }
+        onProgress({ id, percent: 0 });
         const now = Date.now();
         let total = 0;
         for (const root of roots) total += (await measureDir(root.path, rootMeasureOpts(root, now))).bytes;

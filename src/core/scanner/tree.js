@@ -134,19 +134,19 @@ class CompactTree {
 
   /**
    * Dosyaları dolaş. skipDir(path) true dönerse o alt ağaç atlanır.
-   * cb(index, path)
+   * cb(index, dirPath) — dosyanın tam yolu gerekiyorsa çağıran birleştirir (500k dosyada gereksiz join'den kaçınmak için).
    */
   forEachFile(cb, skipDir) {
     const stack = [[0, this.rootPath]];
     while (stack.length) {
       const [i, p] = stack.pop();
       for (let c = this.firstChild[i]; c >= 0; c = this.nextSibling[c]) {
-        const cp = this.P.join(p, this.names[c]);
         if (this.flags[c] & F_DIR) {
+          const cp = this.P.join(p, this.names[c]);
           if (skipDir && skipDir(cp)) continue;
           stack.push([c, cp]);
         } else if (!(this.flags[c] & F_HARDLINK_DUP)) {
-          cb(c, cp);
+          cb(c, p);
         }
       }
     }

@@ -1,0 +1,35 @@
+# Ferahla — Windows için kurulumsuz tek .exe (portable)
+appId: com.ferahla.app
+productName: Ferahla
+copyright: Copyright © 2026 Ferahla katkıcıları (MIT)
+directories:
+  output: dist
+files:
+  - main.js
+  - preload.js
+  - package.json
+  - src/**/*
+  - assets/**/*
+  - "!**/*.map"
+  - "!tests/**"
+  - "!docs/**"
+# Tarama worker'ı (worker_threads) asar arşivi içinden yüklenemeyebilir: çekirdeği dışarı aç.
+asarUnpack:
+  - src/core/**
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  icon: assets/icon-256.png
+  # Yönetici izni İSTENMEZ. Yönetici gerektiren kategoriler (Windows Temp, Windows Update)
+  # arayüzde yalnızca işaretlenir; kullanıcı isterse "Yönetici olarak çalıştır" ile açar.
+  requestedExecutionLevel: asInvoker
+portable:
+  artifactName: Ferahla-${version}-portable.exe
+  unicode: true
+# Yerel (native) modül yok; yeniden derleme gerekmez.
+npmRebuild: false
+nodeGypRebuild: false
+buildDependenciesFromSource: false
+publish: null
