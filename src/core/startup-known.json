@@ -1,0 +1,568 @@
+[
+  {
+    "id": "discord",
+    "name": "Discord",
+    "match": [
+      "discord"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Sohbet uygulaması. Kapatılırsa Discord'u siz açana kadar başlamaz; bildirimler o zamana kadar gelmez.",
+      "en": "Chat app. If disabled it won't start until you open it; no notifications until then."
+    }
+  },
+  {
+    "id": "spotify",
+    "name": "Spotify",
+    "match": [
+      "spotify"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Müzik uygulaması. Başlangıçta açılması gerekmez; istediğinizde açabilirsiniz.",
+      "en": "Music app. It doesn't need to start with Windows; open it when you want."
+    }
+  },
+  {
+    "id": "teams",
+    "name": "Microsoft Teams",
+    "match": [
+      "ms-teams",
+      "msteams",
+      "com.squirrel.teams",
+      "teams"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Görüntülü toplantı ve sohbet. Kapatılırsa Teams'i açana kadar arama/bildirim gelmez.",
+      "en": "Meetings and chat. If disabled, you won't get calls or notifications until you open Teams."
+    }
+  },
+  {
+    "id": "steam",
+    "name": "Steam",
+    "match": [
+      "steam"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Oyun mağazası. Kapatılırsa oyunlar silinmez; Steam'i açtığınızda güncellemeler devam eder.",
+      "en": "Game store. Games stay installed; updates resume when you open Steam."
+    }
+  },
+  {
+    "id": "epic",
+    "name": "Epic Games Launcher",
+    "match": [
+      "epicgameslauncher",
+      "epic games"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Epic Games başlatıcısı. Başlangıçta açılması gerekmez.",
+      "en": "Epic Games launcher. It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "onedrive",
+    "name": "Microsoft OneDrive",
+    "match": [
+      "onedrive"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Dosyalarınızı buluta eşitler. Belgelerinizi OneDrive ile yedekliyorsanız açık bırakın; kullanmıyorsanız kapatabilirsiniz.",
+      "en": "Syncs your files to the cloud. Keep it if you back up documents with OneDrive; disable it only if you don't use it."
+    }
+  },
+  {
+    "id": "skype",
+    "name": "Skype",
+    "match": [
+      "skype"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Görüntülü arama uygulaması. Başlangıçta açılması gerekmez.",
+      "en": "Video calling app. It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "zoom",
+    "name": "Zoom",
+    "match": [
+      "zoom.exe",
+      "\\zoom\\",
+      "zoom"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Görüntülü toplantı uygulaması. Toplantıya katılırken kendiliğinden açılır.",
+      "en": "Video meeting app. It opens by itself when you join a meeting."
+    }
+  },
+  {
+    "id": "acrobat-update",
+    "name": "Adobe Acrobat Update",
+    "match": [
+      "adobearm",
+      "acrobat update",
+      "reader_sl",
+      "adobe reader speed launcher"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Acrobat/Reader güncelleme denetleyicisi. Kapatılırsa Acrobat'ı açtığınızda güncellemeler yine denetlenir.",
+      "en": "Acrobat/Reader update checker. If disabled, updates are still checked when you open Acrobat."
+    }
+  },
+  {
+    "id": "adobe-cc",
+    "name": "Adobe Creative Cloud",
+    "match": [
+      "creative cloud",
+      "adobe desktop service",
+      "ccxprocess",
+      "cclibrary",
+      "adobegcclient",
+      "adobe cef helper",
+      "acrotray"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Adobe uygulamalarının yardımcı süreçleri. Kapatılırsa Adobe programları yine çalışır; eşitleme onları açınca başlar.",
+      "en": "Helper processes for Adobe apps. Adobe programs still work; syncing starts when you open them."
+    }
+  },
+  {
+    "id": "geforce-experience",
+    "name": "NVIDIA GeForce Experience",
+    "match": [
+      "nvbackend",
+      "geforce experience",
+      "nvidia app",
+      "nvidia share"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Oyun kaydı ve sürücü bildirimi aracı. Kapatılırsa ekran kartı sürücüsü etkilenmez.",
+      "en": "Game recording and driver notification tool. The graphics driver is not affected."
+    }
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA",
+    "match": [
+      "nvidia",
+      "nvcpl",
+      "nvtray"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "NVIDIA ekran kartı yardımcısı. Ekran ayarlarınız için açık bırakmanız önerilir.",
+      "en": "NVIDIA graphics helper. Recommended to keep for your display settings."
+    }
+  },
+  {
+    "id": "amd-radeon",
+    "name": "AMD Radeon Software",
+    "match": [
+      "radeonsoftware",
+      "radeon software",
+      "amdrsserv",
+      "cncmd",
+      "amd radeon"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "AMD ekran kartı yazılımı. Ekran ayarları ve kısayollar için açık bırakmanız önerilir.",
+      "en": "AMD graphics software. Recommended to keep for display settings and hotkeys."
+    }
+  },
+  {
+    "id": "realtek-audio",
+    "name": "Realtek Audio",
+    "match": [
+      "realtek",
+      "rtkaud",
+      "rthdvcpl",
+      "rtkngui",
+      "ravcpl"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Ses kartı yardımcısı. Kapatılırsa kulaklık/hoparlör algılama bozulabilir; açık bırakın.",
+      "en": "Sound card helper. Disabling may break headphone/speaker detection; keep it."
+    }
+  },
+  {
+    "id": "logitech-ghub",
+    "name": "Logitech G HUB",
+    "match": [
+      "lghub",
+      "logitech g hub",
+      "g hub"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Logitech fare/klavye ayarları. Kapatılırsa DPI, tuş ve ışık ayarlarınız uygulanmayabilir.",
+      "en": "Logitech mouse/keyboard settings. If disabled, your DPI, key and lighting settings may not apply."
+    }
+  },
+  {
+    "id": "razer-synapse",
+    "name": "Razer Synapse",
+    "match": [
+      "razer"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Razer cihaz ayarları. Kapatılırsa tuş ve ışık ayarlarınız uygulanmayabilir.",
+      "en": "Razer device settings. If disabled, key and lighting settings may not apply."
+    }
+  },
+  {
+    "id": "edge-autolaunch",
+    "name": "Microsoft Edge (hızlı başlatma)",
+    "match": [
+      "microsoftedgeautolaunch",
+      "msedge.exe --no-startup-window",
+      "--win-session-start"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Edge'i önceden yükleyerek hızlı açılmasını sağlar. Kapatılırsa Edge biraz daha yavaş açılır, başka bir şey değişmez.",
+      "en": "Preloads Edge so it opens faster. If disabled Edge opens slightly slower; nothing else changes."
+    }
+  },
+  {
+    "id": "edge-update",
+    "name": "Microsoft Edge Update",
+    "match": [
+      "microsoftedgeupdate",
+      "msedgeupdate",
+      "edge update"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Edge güvenlik güncellemeleri. Açık bırakmanız önerilir.",
+      "en": "Edge security updates. Recommended to keep."
+    }
+  },
+  {
+    "id": "google-update",
+    "name": "Google Update",
+    "match": [
+      "googleupdate",
+      "google update",
+      "googleupdater"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Chrome ve diğer Google uygulamalarının güvenlik güncellemeleri. Açık bırakmanız önerilir.",
+      "en": "Security updates for Chrome and other Google apps. Recommended to keep."
+    }
+  },
+  {
+    "id": "google-drive",
+    "name": "Google Drive",
+    "match": [
+      "googledrivefs",
+      "google drive"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Dosyalarınızı Google Drive ile eşitler. Kullanıyorsanız açık bırakın.",
+      "en": "Syncs your files with Google Drive. Keep it if you use it."
+    }
+  },
+  {
+    "id": "java-update",
+    "name": "Java Update",
+    "match": [
+      "jusched",
+      "sunjavaupdatesched",
+      "java update",
+      "jucheck"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Java güncelleme hatırlatıcısı. Kapatılırsa Java'yı ara sıra elle güncelleyin.",
+      "en": "Java update reminder. If disabled, update Java manually now and then."
+    }
+  },
+  {
+    "id": "itunes-helper",
+    "name": "iTunesHelper",
+    "match": [
+      "ituneshelper"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "iPhone bağlanınca iTunes'u açar. Kapatılırsa iTunes'u elle açabilirsiniz.",
+      "en": "Opens iTunes when an iPhone is connected. You can open iTunes yourself."
+    }
+  },
+  {
+    "id": "dropbox",
+    "name": "Dropbox",
+    "match": [
+      "dropbox"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Dosyalarınızı Dropbox ile eşitler. Kullanıyorsanız açık bırakın.",
+      "en": "Syncs your files with Dropbox. Keep it if you use it."
+    }
+  },
+  {
+    "id": "whatsapp",
+    "name": "WhatsApp",
+    "match": [
+      "whatsapp"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Mesajlaşma uygulaması. Kapatılırsa siz açana kadar bildirim gelmez.",
+      "en": "Messaging app. No notifications until you open it."
+    }
+  },
+  {
+    "id": "telegram",
+    "name": "Telegram",
+    "match": [
+      "telegram"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Mesajlaşma uygulaması. Kapatılırsa siz açana kadar bildirim gelmez.",
+      "en": "Messaging app. No notifications until you open it."
+    }
+  },
+  {
+    "id": "utorrent",
+    "name": "uTorrent",
+    "match": [
+      "utorrent"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Torrent istemcisi. Başlangıçta açılması gerekmez; arka planda internetinizi kullanabilir.",
+      "en": "Torrent client. It doesn't need to start with Windows and may use your bandwidth in the background."
+    }
+  },
+  {
+    "id": "qbittorrent",
+    "name": "qBittorrent",
+    "match": [
+      "qbittorrent"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Torrent istemcisi. Başlangıçta açılması gerekmez.",
+      "en": "Torrent client. It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "battlenet",
+    "name": "Battle.net",
+    "match": [
+      "battle.net",
+      "battlenet"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Blizzard oyun başlatıcısı. Başlangıçta açılması gerekmez.",
+      "en": "Blizzard game launcher. It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "ea-app",
+    "name": "EA app",
+    "match": [
+      "eadesktop",
+      "ea desktop",
+      "ea app",
+      "electronic arts",
+      "origin.exe"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "EA oyun başlatıcısı (eski adıyla Origin). Başlangıçta açılması gerekmez.",
+      "en": "EA game launcher (formerly Origin). It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "riot-vanguard",
+    "name": "Riot Vanguard",
+    "match": [
+      "vgtray",
+      "vanguard"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Valorant/League hile koruması. Kapatılırsa bu oyunlar açılmayabilir.",
+      "en": "Valorant/League anti-cheat. Those games may not start if disabled."
+    }
+  },
+  {
+    "id": "riot-client",
+    "name": "Riot Client",
+    "match": [
+      "riotclient",
+      "riot client"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Riot Games başlatıcısı. Başlangıçta açılması gerekmez.",
+      "en": "Riot Games launcher. It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "ubisoft-connect",
+    "name": "Ubisoft Connect",
+    "match": [
+      "ubisoft",
+      "upc.exe",
+      "uplay"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Ubisoft oyun başlatıcısı. Başlangıçta açılması gerekmez.",
+      "en": "Ubisoft game launcher. It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "gog-galaxy",
+    "name": "GOG Galaxy",
+    "match": [
+      "galaxyclient",
+      "gog galaxy"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "GOG oyun başlatıcısı. Başlangıçta açılması gerekmez.",
+      "en": "GOG game launcher. It doesn't need to start with Windows."
+    }
+  },
+  {
+    "id": "cortana",
+    "name": "Cortana",
+    "match": [
+      "cortana"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Microsoft'un sesli asistanı. Kullanmıyorsanız kapatabilirsiniz.",
+      "en": "Microsoft's voice assistant. Disable it if you don't use it."
+    }
+  },
+  {
+    "id": "windows-security",
+    "name": "Windows Güvenlik",
+    "match": [
+      "securityhealth",
+      "windows security",
+      "windows defender",
+      "msascuil"
+    ],
+    "advice": "keep",
+    "description": {
+      "tr": "Windows Güvenlik bildirim simgesi. Virüs uyarılarını görmek için açık bırakın.",
+      "en": "Windows Security notification icon. Keep it to see virus alerts."
+    }
+  },
+  {
+    "id": "slack",
+    "name": "Slack",
+    "match": [
+      "slack"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "İş sohbet uygulaması. Kapatılırsa siz açana kadar bildirim gelmez.",
+      "en": "Work chat app. No notifications until you open it."
+    }
+  },
+  {
+    "id": "opera-assistant",
+    "name": "Opera Browser Assistant",
+    "match": [
+      "browser_assistant",
+      "opera browser assistant"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Opera'nın arka plan yardımcısı. Kapatılması güvenlidir.",
+      "en": "Opera's background helper. Safe to disable."
+    }
+  },
+  {
+    "id": "opera",
+    "name": "Opera",
+    "match": [
+      "opera gx stable",
+      "opera stable",
+      "launcher.exe\" --scheduledautoupdate",
+      "opera"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Opera tarayıcısının otomatik başlatması. Kapatılırsa tarayıcıyı siz açarsınız.",
+      "en": "Opera browser auto-start. If disabled you open the browser yourself."
+    }
+  },
+  {
+    "id": "intel-graphics",
+    "name": "Intel Graphics",
+    "match": [
+      "igfxtray",
+      "igfxhk",
+      "igfxpers",
+      "intel graphics"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Intel ekran kartı tepsi simgesi ve kısayolları. Kapatılırsa sürücü etkilenmez.",
+      "en": "Intel graphics tray icon and hotkeys. The driver is not affected."
+    }
+  },
+  {
+    "id": "docker-desktop",
+    "name": "Docker Desktop",
+    "match": [
+      "docker desktop"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Yazılım geliştirme aracı. İhtiyaç duyduğunuzda açabilirsiniz; açıkken çok bellek kullanır.",
+      "en": "Developer tool. Open it when you need it; it uses a lot of memory."
+    }
+  },
+  {
+    "id": "ccleaner",
+    "name": "CCleaner",
+    "match": [
+      "ccleaner"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "CCleaner'ın arka plan izleyicisi. Kapatılması güvenlidir.",
+      "en": "CCleaner's background monitor. Safe to disable."
+    }
+  },
+  {
+    "id": "wallpaper-engine",
+    "name": "Wallpaper Engine",
+    "match": [
+      "wallpaper32",
+      "wallpaper64",
+      "wallpaper engine"
+    ],
+    "advice": "safe-to-disable",
+    "description": {
+      "tr": "Hareketli duvar kâğıdı. Kapatılırsa duvar kâğıdı sabit kalır.",
+      "en": "Animated wallpaper. If disabled the wallpaper stays static."
+    }
+  }
+]
