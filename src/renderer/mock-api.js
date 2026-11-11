@@ -640,6 +640,9 @@
       return { ok: true };
     },
 
+    async pickFolder() { await wait(100); return 'D:\\Oyun Kayıtları'; },
+    async relaunchAsAdmin() { await wait(300); return { ok: false, error: 'cancelled', message: 'Yönetici izni verilmedi.' }; },
+
     async openRecycleBin() { console.info('[mock] Geri Dönüşüm Kutusu açılırdı'); },
     async revealInFolder(path) { console.info('[mock] Klasörde gösterilirdi:', path); },
   };

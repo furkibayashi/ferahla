@@ -10,7 +10,7 @@
   const I = window.FerahlaI18n;
   const TM = window.FerahlaTreemap;
   const icon = window.FerahlaIcons.icon;
-  const t = (k, v) => I.t(k, v);
+  const t = (k, v, soft) => I.t(k, v, soft);
   const B = (n) => I.fmtBytes(n);
 
   const ROUTES = ['overview', 'clean', 'map', 'large', 'dups', 'startup', 'history', 'settings'];
@@ -345,7 +345,7 @@
     </div>`;
     if (!state.info.isAdmin && avail.some((x) => x.requiresAdmin && x.sizeBytes > 0)) {
       html += `<div class="note note-info">${icon('shield')}<div><p class="note-title">${esc(t('clean.adminTitle'))}</p><p>${esc(t('clean.adminText'))}</p>
-        ${typeof api.relaunchAsAdmin === 'function' ? `<button type="button" class="btn btn-secondary btn-sm" data-action="relaunch-admin">${esc(t('clean.relaunchAdmin'))}</button>` : ''}</div></div>`;
+        ${typeof api.relaunchAsAdmin === 'function' && state.info.platform === 'win32' ? `<button type="button" class="btn btn-secondary btn-sm" data-action="relaunch-admin">${esc(t('clean.relaunchAdmin'))}</button>` : ''}</div></div>`;
     }
     for (const g of ['system', 'browsers', 'apps']) {
       const list = avail.filter((x) => categoryGroup(x) === g);
@@ -1179,7 +1179,10 @@
     'cats-recommended': () => { state.selectionTouched = true; state.selected = new Set(recommendedCats().map((c) => c.id)); render(); },
     'cats-none': () => { state.selectionTouched = true; state.selected = new Set(); render(); },
     'cat-desc': (el) => { const id = el.dataset.id; if (state.openDesc.has(id)) state.openDesc.delete(id); else state.openDesc.add(id); render(); },
-    'relaunch-admin': () => call('relaunchAsAdmin'),
+    'relaunch-admin': async () => {
+      const r = await call('relaunchAsAdmin');
+      if (r && r.ok === false) toast(r.error === 'cancelled' ? t('clean.relaunchCancelled') : t('clean.relaunchFailed') + (r.message ? ' ' + r.message : ''), null, 'warn');
+    },
     'result-done': () => { state.clean = { status: 'idle', ids: [], progress: {}, result: null }; go('overview'); },
     'scan-drive': (el) => startScan(el.dataset.root),
     'scan-retry': () => startScan(state.scan.root || (state.drives && state.drives[0] && state.drives[0].path)),

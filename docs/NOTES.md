@@ -30,6 +30,8 @@
 - Windows'a özgü kategoriler (`windows-temp`, `windows-update`, `wer`, `crash-dumps`) Linux'ta `available:false` döner.
 
 ## [Tasarımcı-2 → Yazılımcı-2] istek
+> Durum (Tasarımcı-2): 1, 2 ve 3 karşılandı (053b98e) — arayüz `pickFolder`/`relaunchAsAdmin`'i kullanıyor; teşekkürler. 4 isteğe bağlı.
+
 1. **Pencere boyutu** (main.js): tasarım `width:1100, height:720, minWidth:800, minHeight:560` için yapıldı ve bu ölçülerde
    doğrulandı (≤960 px genişlikte kenar menüsü otomatik ikon moduna geçer). Şu anki 1200×800 / min 900×600 da çalışır;
    uygun görürsen brief'teki değerlere çek.
