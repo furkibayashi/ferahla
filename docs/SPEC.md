@@ -78,6 +78,9 @@ getHistory() -> [{ id, at, action:'clean'|'trash'|'startup', summary:{tr,en}, fr
 undoHistory(id) -> { ok, error? }      // başlangıç değişikliklerini geri alır
 openRecycleBin() -> void
 revealInFolder(path) -> void
+pickFolder() -> string|null           // klasör seçme penceresi (iptal = null)
+relaunchAsAdmin() -> { ok, error? }   // win32: UAC ile yönetici olarak yeniden başlatır, başarılıysa bu örnek kapanır;
+                                      // UAC iptal = error:'cancelled', linux = error:'unsupported'
 ```
 Tasarımcı `src/renderer/mock-api.js` yazar: `window.ferahla` yoksa gerçekçi sahte veriyle aynı sözleşmeyi taklit eder; böylece
 arayüz tarayıcıda (Playwright ile) tek başına önizlenebilir. Gerçek uygulamada preload API'si varsa mock devreye girmez.

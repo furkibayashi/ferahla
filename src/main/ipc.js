@@ -235,6 +235,16 @@ function registerIpc(d) {
     return undefined;
   });
 
+  handle('pickFolder', async () => {
+    const p = d.pickFolder ? await d.pickFolder() : null;
+    return typeof p === 'string' && p ? p : null;
+  });
+
+  handle('relaunchAsAdmin', async () => {
+    const r = d.relaunchAsAdmin ? await d.relaunchAsAdmin() : { ok: false, error: 'unsupported' };
+    return r.ok ? { ok: true } : errorResult(r.error || 'relaunch-failed', lang());
+  });
+
   handle('revealInFolder', async (p) => {
     if (!isAbsString(p)) return undefined;
     shell.showItemInFolder(path.normalize(p));

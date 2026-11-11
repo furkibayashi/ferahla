@@ -3,7 +3,7 @@
  * Ferahla — ana süreç giriş noktası.
  * Arka planda çalışmaz: pencere kapanınca uygulama tamamen kapanır. Ağ isteği yapmaz, veri toplamaz.
  */
-const { app, BrowserWindow, ipcMain, shell, nativeTheme, Menu, session } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, nativeTheme, Menu, session, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -12,6 +12,7 @@ const { registerIpc } = require('./src/main/ipc');
 const { History } = require('./src/core/history');
 const { ScanManager } = require('./src/core/scanner');
 const { getPlatform } = require('./src/core/platform');
+const { relaunchAsAdmin, ELEVATED_FLAG } = require('./src/main/elevate');
 
 // Linux'ta root olarak (ör. konteyner) çalışırken Chromium sandbox'ı başlatılamaz. Ana süreçteki denetim JS'den önce
 // yapıldığı için `npm start` bunu src/main/dev-start.js ile çözer; buradaki anahtar alt süreçler içindir.
@@ -26,7 +27,20 @@ if (process.env.FERAHLA_USER_DATA) {
 const RENDERER_INDEX = path.join(__dirname, 'src', 'renderer', 'index.html');
 const PRELOAD = path.join(__dirname, 'preload.js');
 
-if (!app.requestSingleInstanceLock()) {
+// "Yönetici olarak yeniden başlat" ile açılan örnek (--elevated), eski örnek kapanıp kilidi bırakana kadar bekler.
+const ELEVATED = process.argv.includes(ELEVATED_FLAG);
+const gotLockNow = app.requestSingleInstanceLock();
+
+async function acquireLock() {
+  if (gotLockNow) return true;
+  for (let i = 0; i < 60; i++) { // en fazla ~15 sn
+    await new Promise((r) => setTimeout(r, 250));
+    if (app.requestSingleInstanceLock()) return true;
+  }
+  return false;
+}
+
+if (!gotLockNow && !ELEVATED) {
   app.quit();
 } else {
   let win = null;
@@ -52,13 +66,13 @@ if (!app.requestSingleInstanceLock()) {
       .map((f) => path.join(__dirname, 'assets', f))
       .find((f) => (f.endsWith('.ico') ? process.platform === 'win32' : true) && fs.existsSync(f));
     win = new BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 900,
-      minHeight: 600,
+      width: 1100,
+      height: 720,
+      minWidth: 800,
+      minHeight: 560,
       show: false,
       title: 'Ferahla',
-      backgroundColor: nativeTheme.shouldUseDarkColors ? '#16181d' : '#f6f7f9',
+      backgroundColor: nativeTheme.shouldUseDarkColors ? '#0C1412' : '#F3F7F5',
       ...(iconPath ? { icon: iconPath } : {}),
       webPreferences: {
         preload: PRELOAD,
@@ -94,7 +108,8 @@ if (!app.requestSingleInstanceLock()) {
     }
   }
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
+    if (!(await acquireLock())) { app.quit(); return; }
     const userData = app.getPath('userData');
     // Türkçe öncelikli: varsayılan dil her zaman Türkçe; kullanıcı Ayarlar'dan İngilizce'ye geçebilir.
     settings = new Settings(path.join(userData, 'settings.json'), { defaultLang: 'tr' });
@@ -111,6 +126,22 @@ if (!app.requestSingleInstanceLock()) {
       getWindow: () => win,
       rendererIndex: RENDERER_INDEX,
       onSettingsChanged: applyTheme,
+      pickFolder: async () => {
+        const opts = { properties: ['openDirectory', 'dontAddToRecent'] };
+        const r = win && !win.isDestroyed() ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
+        return r.canceled || !r.filePaths || !r.filePaths[0] ? null : r.filePaths[0];
+      },
+      relaunchAsAdmin: async () => {
+        const r = await relaunchAsAdmin({
+          // electron-builder portable: geçici klasöre açılan kopya değil, kullanıcının çalıştırdığı asıl .exe
+          execPath: process.env.PORTABLE_EXECUTABLE_FILE || process.execPath,
+          isPackaged: app.isPackaged, appPath: app.getAppPath() });
+        if (r.ok) {
+          // Yanıt arayüze ulaşsın, sonra kilidi bırakıp kapan (yeni örnek kilidi bekliyor).
+          setTimeout(() => { app.releaseSingleInstanceLock(); app.quit(); }, 300);
+        }
+        return r;
+      },
     });
 
     createWindow();

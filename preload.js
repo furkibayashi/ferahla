@@ -48,4 +48,6 @@ contextBridge.exposeInMainWorld('ferahla', {
   undoHistory: (id) => invoke('undoHistory', id),
   openRecycleBin: () => invoke('openRecycleBin').then(() => undefined),
   revealInFolder: (path) => invoke('revealInFolder', path).then(() => undefined),
+  pickFolder: () => invoke('pickFolder').then((p) => (typeof p === 'string' && p ? p : null)),
+  relaunchAsAdmin: () => invoke('relaunchAsAdmin'),
 });

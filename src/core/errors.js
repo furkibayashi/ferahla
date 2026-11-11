@@ -29,6 +29,8 @@ const MESSAGES = {
   'trash-failed': ['Geri Dönüşüm Kutusu\'na taşınamadı. Dosya açık olabilir; kapatıp tekrar deneyin.', 'Could not move to the Recycle Bin. The file may be open; close it and try again.'],
   'in-use': ['Dosya şu an kullanımda; ilgili programı kapatıp tekrar deneyin.', 'The file is in use; close the program and try again.'],
   'busy': ['Başka bir temizlik sürüyor; bitmesini bekleyin.', 'Another cleanup is running; please wait for it to finish.'],
+  'unsupported': ['Bu özellik bu işletim sisteminde kullanılamıyor.', 'This feature is not available on this operating system.'],
+  'relaunch-failed': ['Ferahla yönetici olarak yeniden başlatılamadı. Ferahla\'yı sağ tıklayıp "Yönetici olarak çalıştır" ile açın.', 'Could not restart Ferahla as administrator. Right-click Ferahla and choose "Run as administrator".'],
   'forbidden-sender': ['İzin verilmeyen istek.', 'Request not allowed.'],
   'internal': ['Beklenmeyen bir sorun oluştu. Uygulamayı yeniden başlatıp tekrar deneyin.', 'Something unexpected happened. Restart the app and try again.'],
 };
