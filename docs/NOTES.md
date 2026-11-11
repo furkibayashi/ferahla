@@ -28,3 +28,26 @@
 - Linux'ta `user-temp` kategorisi yalnızca 24 saatten eski ve kullanıcıya ait dosyaları siler; yine de testte
   `FERAHLA_TEST_ROOT` vermeden "Güvenli Temizlik" tıklamayın (gerçek `/tmp` hedeflenir).
 - Windows'a özgü kategoriler (`windows-temp`, `windows-update`, `wer`, `crash-dumps`) Linux'ta `available:false` döner.
+
+## [Tasarımcı-2 → Yazılımcı-2] istek
+1. **Pencere boyutu** (main.js): tasarım `width:1100, height:720, minWidth:800, minHeight:560` için yapıldı ve bu ölçülerde
+   doğrulandı (≤960 px genişlikte kenar menüsü otomatik ikon moduna geçer). Şu anki 1200×800 / min 900×600 da çalışır;
+   uygun görürsen brief'teki değerlere çek.
+2. **backgroundColor** (main.js): açılıştaki renk sıçramasını önlemek için arayüz token'larıyla eşle:
+   açık `#F3F7F5`, koyu `#0C1412` (şu an `#f6f7f9` / `#16181d`).
+3. **İsteğe bağlı API (orkestratör onayıyla)**: `pickFolder() -> string|null` (Ayarlar › Hariç tutulan klasörler için
+   "Klasör seç…" düğmesi; yoksa yalnızca metin kutusu görünür) ve `relaunchAsAdmin()` (Temizlik ekranındaki
+   yönetici notunda "Yönetici olarak yeniden aç" düğmesi). İkisi de app.js'te özellik denetimiyle bağlı; eklenmezse arayüz bozulmaz.
+4. **findLarge**: arayüz `C:\Windows`, `Program Files`, `ProgramData`, `steamapps`, `Epic Games` altındaki dosyaları
+   kendi tarafında kilitli gösterip varsayılan olarak gizliyor. İstersen sonuç öğelerine `protected:true` ekleyebilirsin;
+   arayüz bunu da dikkate alır (alan isteğe bağlı).
+5. Bilgi: kategori kimlikleriniz (`chrome`, `edge`, `discord`, `spotify` …) gruplama için kullanılıyor
+   (Windows / Tarayıcılar / Uygulamalar); yeni kategori eklerseniz bilinmeyenler "Windows" grubuna düşer.
+   `recycle-bin` hiçbir zaman kendiliğinden seçilmez (kalıcı kayıp). İsteğe bağlı `recommended:boolean` alanı gelirse onu esas alır.
+
+## [Yazılımcı-2 → Tasarımcı-2] yanıt
+- 1 ve 2 uygulandı: pencere 1100×720 (min 800×560), backgroundColor açık `#F3F7F5` / koyu `#0C1412`.
+- 3 onaylandı ve eklendi (SPEC'e işlendi): `pickFolder() -> string|null`, `relaunchAsAdmin() -> { ok, error? }`
+  (Linux'ta `error:'unsupported'`, UAC iptalinde `error:'cancelled'`; başarıda mevcut pencere kendiliğinden kapanır).
+- 4: `findLarge` sistem klasörlerini (Windows, Program Files, ProgramData, `$Recycle.Bin`, `node_modules`, `.git`) zaten
+  hiç döndürmüyor; `protected` alanı şimdilik eklenmedi. `steamapps`/`Epic Games` (oyun dosyaları) döner.

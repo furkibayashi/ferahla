@@ -64,8 +64,15 @@
     const head = Math.ceil(max * 0.4), tail = max - head - 1;
     return s.slice(0, head) + '…' + s.slice(s.length - tail);
   }
+  /** Kök yolun kısa adı: "C:\\" → "C:", "/" → "/", uzun klasör yolu → son klasör adı. */
+  const rootLabel = (p) => {
+    const trimmed = String(p || '').replace(/[\\/]+$/, '');
+    if (!trimmed) return p || '/';
+    if (/^[a-z]:$/i.test(trimmed)) return trimmed;
+    return baseName(trimmed);
+  };
   const driveName = (d) => {
-    const letter = d.path.replace(/[\\/]+$/, '');
+    const letter = rootLabel(d.path);
     return d.label ? `${d.label} (${letter})` : `${t('drive.local')} (${letter})`;
   };
 
@@ -122,7 +129,7 @@
     $('#privacy-note').innerHTML = icon('shield') + '<span>' + esc(t('brand.privacy')) + '</span>';
     $('#nav').setAttribute('aria-label', t('a11y.nav'));
   }
-  mql.addEventListener('change', () => { if (state.settings.theme === 'system' && state.route === 'map') drawTreemap(); });
+  mql.addEventListener('change', () => { if (state.settings.theme === 'system' && state.route === 'map') render(); });
 
   // ---------- render altyapısı ----------
   const view = () => $('#view');
@@ -223,7 +230,7 @@
   function scanContext() {
     const l = state.scan.last;
     if (!l) return '';
-    return `<p class="context">${icon('drive')}${esc(t('scan.context', { root: l.root.replace(/[\\/]+$/, '') || l.root, ago: I.fmtRelative(l.at) }))}</p>`;
+    return `<p class="context">${icon('drive')}${esc(t('scan.context', { root: rootLabel(l.root), ago: I.fmtRelative(l.at) }))}</p>`;
   }
 
   // ======================================================================
@@ -418,14 +425,14 @@
     const drives = state.drives || [];
     const chooser = `<div class="map-controls" role="group" aria-label="${esc(t('map.chooseDrive'))}">
       ${drives.map((d) => `<button type="button" class="seg${s.last && s.last.root === d.path ? ' is-on' : ''}" data-action="scan-drive" data-root="${esc(d.path)}" id="seg-${cssId(d.path)}" ${s.status === 'running' ? 'disabled' : ''}
-        aria-label="${esc(t(s.last && s.last.root === d.path ? 'map.rescanAria' : 'map.scanAria', { drive: driveName(d) }))}">${icon('drive')}<span>${esc(d.path.replace(/[\\/]+$/, ''))}</span>${s.last && s.last.root === d.path ? `<span class="seg-sub">${esc(t('map.rescan'))}</span>` : ''}</button>`).join('')}
+        aria-label="${esc(t(s.last && s.last.root === d.path ? 'map.rescanAria' : 'map.scanAria', { drive: driveName(d) }))}">${icon('drive')}<span>${esc(rootLabel(d.path))}</span>${s.last && s.last.root === d.path ? `<span class="seg-sub">${esc(t('map.rescan'))}</span>` : ''}</button>`).join('')}
     </div>`;
     let html = head('map.title', 'map.lead', drives.length ? chooser : '');
 
     if (s.status === 'running') {
       const p = s.progress || { files: 0, bytes: 0, currentPath: s.root };
       return html + `<section class="card scan-live" aria-labelledby="scan-h">
-        <div class="scan-top"><div class="pulse" aria-hidden="true"></div><h2 id="scan-h">${esc(t('scan.running', { root: (s.root || '').replace(/[\\/]+$/, '') }))}</h2>
+        <div class="scan-top"><div class="pulse" aria-hidden="true"></div><h2 id="scan-h">${esc(t('scan.running', { root: rootLabel(s.root || '') }))}</h2>
         <button type="button" class="btn btn-secondary" data-action="scan-cancel" id="scan-cancel">${icon('stop')}${esc(t('scan.cancel'))}</button></div>
         <div class="indeterminate" role="progressbar" aria-label="${esc(t('scan.running', { root: s.root || '' }))}"><div></div></div>
         <dl class="scan-stats">
@@ -449,7 +456,7 @@
       return html;
     }
     const l = s.last;
-    html += `<p class="context">${icon('check')}<span>${esc(t('scan.summary', { root: l.root.replace(/[\\/]+$/, ''), files: I.fmtNum(l.files), size: B(l.totalBytes), dur: I.fmtDuration(l.durationMs) }))}${l.skipped ? ' ' + esc(t('scan.skipped', { n: I.fmtNum(l.skipped) })) : ''}</span></p>`;
+    html += `<p class="context">${icon('check')}<span>${esc(t('scan.summary', { root: rootLabel(l.root), files: I.fmtNum(l.files), size: B(l.totalBytes), dur: I.fmtDuration(l.durationMs) }))}${l.skipped ? ' ' + esc(t('scan.skipped', { n: I.fmtNum(l.skipped) })) : ''}</span></p>`;
 
     // ekmek kırıntısı
     const crumbs = buildCrumbs(l.root, state.map.path || l.root);
@@ -464,7 +471,7 @@
     const total = items ? sum(items, (x) => x.sizeBytes) : 0;
     html += `<div class="map-wrap">
       <div class="map-left"><div class="tm" id="tm" ${state.map.loading ? 'aria-busy="true"' : ''}></div>
-        <div class="legend" aria-hidden="true"><span>${esc(t('map.small'))}</span><span class="legend-ramp"></span><span>${esc(t('map.big'))}</span><span class="legend-tip">${esc(t('map.legendTip'))}</span></div></div>
+        <div class="legend" aria-hidden="true"><span>${esc(t('map.small'))}</span><span class="legend-ramp"></span><span>${esc(t('map.big'))}</span><span class="legend-tip">${esc(t(resolvedTheme() === 'dark' ? 'map.legendTipDark' : 'map.legendTip'))}</span></div></div>
       <section class="map-list card" aria-labelledby="ml-h"><h2 id="ml-h" class="ml-head">${esc(t('map.contents'))}<span class="muted">${items ? esc(B(total)) : ''}</span></h2>
         ${!items ? `<p class="muted pad">${esc(t('common.loading'))}</p>` : items.length === 0 ? `<p class="muted pad">${esc(t('map.emptyFolder'))}</p>` : `<ul class="ml" id="ml">${listRows(items, total)}</ul>`}
       </section></div>`;
@@ -490,7 +497,7 @@
   }
   function buildCrumbs(root, path) {
     const s = sep(root);
-    const rootName = root.replace(/[\\/]+$/, '') || root;
+    const rootName = rootLabel(root);
     const out = [{ name: rootName, path: root }];
     if (!path || path === root) return out;
     const rest = path.slice(root.length).split(s).filter(Boolean);
