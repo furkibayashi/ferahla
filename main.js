@@ -96,7 +96,8 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() => {
     const userData = app.getPath('userData');
-    settings = new Settings(path.join(userData, 'settings.json'), { defaultLang: app.getLocale().toLowerCase().startsWith('tr') ? 'tr' : 'en' });
+    // Türkçe öncelikli: varsayılan dil her zaman Türkçe; kullanıcı Ayarlar'dan İngilizce'ye geçebilir.
+    settings = new Settings(path.join(userData, 'settings.json'), { defaultLang: 'tr' });
     history = new History(path.join(userData, 'history.json'));
     applyTheme(settings.get());
     isAdmin();

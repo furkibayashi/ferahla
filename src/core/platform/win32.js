@@ -89,7 +89,10 @@ async function listDrives() {
 
 async function isAdmin() {
   const r = await run('net', ['session'], { timeout: 8000 });
-  return r.code === 0;
+  if (r.code === 0) return true;
+  // "Sunucu" hizmeti kapalıysa net session yöneticide de başarısız olur: PowerShell ile doğrula.
+  const ps = await powershell('([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)', { timeout: 15000 });
+  return ps.code === 0 && /true/i.test(ps.stdout);
 }
 
 async function listProcesses() {
@@ -185,9 +188,12 @@ function requiresAdmin(id) { return REQUIRES_ADMIN.has(id); }
 
 // ---------- Geri Dönüşüm Kutusu ----------
 
+let sidCache = null;
 async function currentSid() {
+  if (sidCache) return sidCache;
   const r = await run('whoami', ['/user', '/fo', 'csv', '/nh'], { timeout: 8000 });
-  return r.code === 0 ? parseWhoamiSid(r.stdout) : null;
+  sidCache = r.code === 0 ? parseWhoamiSid(r.stdout) : null;
+  return sidCache;
 }
 
 /** Kullanıcının tüm sürücülerdeki $Recycle.Bin\<SID> klasörleri. */

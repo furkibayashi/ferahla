@@ -27,7 +27,14 @@ function registerIpc(d) {
   const { ipcMain, shell, app, getWindow, settings, history, scanner, platform } = d;
   const log = d.log || ((...a) => console.error('[ferahla]', ...a));
   const lang = () => { try { return settings.get().lang; } catch (e) { return 'tr'; } };
-  const trustedUrl = pathToFileURL(d.rendererIndex).href;
+  // file:// URL karşılaştırması: kodlama ve (Windows'ta) harf farklarına dayanıklı.
+  const normUrl = (u) => {
+    let x = String(u || '').split(/[?#]/)[0];
+    try { x = decodeURIComponent(x); } catch (e) { /* olduğu gibi */ }
+    x = x.replace(/\\/g, '/');
+    return process.platform === 'win32' ? x.toLowerCase() : x;
+  };
+  const trustedUrl = normUrl(pathToFileURL(d.rendererIndex).href);
 
   const send = (channel, payload) => {
     const w = getWindow();
@@ -36,7 +43,7 @@ function registerIpc(d) {
 
   function isTrustedSender(event) {
     const url = (event.senderFrame && event.senderFrame.url) || '';
-    return url.split(/[?#]/)[0] === trustedUrl;
+    return url.startsWith('file:') && normUrl(url) === trustedUrl;
   }
 
   function handle(name, fn) {
