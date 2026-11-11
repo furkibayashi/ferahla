@@ -246,8 +246,9 @@ function registerIpc(d) {
   });
 
   handle('revealInFolder', async (p) => {
-    if (!isAbsString(p)) return undefined;
-    shell.showItemInFolder(path.normalize(p));
+    // Renderer'dan gelen yola güvenme: mutlak, '..' yok, var olan bir yol olmalı.
+    const chk = safety.checkExistingPath(p);
+    if (chk.ok) shell.showItemInFolder(chk.realPath);
     return undefined;
   });
 

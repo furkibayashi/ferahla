@@ -244,3 +244,16 @@ test('yardımcılar: isStrictlyInside / isDriveRoot', () => {
   assert.equal(isDriveRoot('/', 'linux'), true);
   assert.equal(isDriveRoot(os.tmpdir(), 'linux'), false);
 });
+
+test('checkExistingPath: renderer yolları (göster/aç) için temel denetim', (t) => {
+  const { checkExistingPath } = require('../../src/core/safety');
+  const tmp = makeTmp();
+  t.after(() => tmp.cleanup());
+  const f = tmp.file('a/b.txt', 'x');
+  assert.equal(checkExistingPath(f, { platform: 'linux' }).ok, true);
+  assert.equal(checkExistingPath('/', { platform: 'linux' }).ok, true);
+  assert.equal(checkExistingPath(tmp.dir + '/a/../a/b.txt', { platform: 'linux' }).reason, 'dotdot');
+  assert.equal(checkExistingPath('a/b.txt', { platform: 'linux' }).reason, 'relative-path');
+  assert.equal(checkExistingPath(tmp.p('yok'), { platform: 'linux' }).reason, 'not-found');
+  assert.equal(checkExistingPath(123, { platform: 'linux' }).reason, 'invalid-path');
+});

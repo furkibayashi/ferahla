@@ -119,7 +119,10 @@ if (!gotLockNow && !ELEVATED) {
 
     Menu.setApplicationMenu(null);
     // Hiçbir web izni (kamera, bildirim, konum...) verilmez.
+    // İzin istekleri ve izin sorguları varsayılan olarak REDDEDİLİR (hiçbirine ihtiyaç yok).
     session.defaultSession.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
+    session.defaultSession.setPermissionCheckHandler(() => false);
+    session.defaultSession.setDevicePermissionHandler(() => false);
 
     registerIpc({
       ipcMain, shell, app, settings, history, scanner, platform, isAdmin,

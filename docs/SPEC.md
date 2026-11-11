@@ -8,7 +8,7 @@ Türkçe öncelikli (TR/EN), açık/koyu tema, kurulumsuz tek .exe, açık kayna
 CCleaner'ın tersine: arka planda çalışmaz, satış ekranı yok, kayıt defteri "temizliği" YOK (riskli ve faydasız).
 
 ## Teknoloji
-- Electron 33 (`electron@33`), saf JavaScript (CommonJS ana süreç, renderer'da vanilla JS + CSS; treemap için `d3-hierarchy`
+- Electron 45 (`electron@45`, desteklenen en güncel kararlı sürüm; 33 artık güvenlik yaması almıyor), saf JavaScript (CommonJS ana süreç, renderer'da vanilla JS + CSS; treemap için `d3-hierarchy`
   renderer'a yerel dosya olarak kopyalanabilir veya squarify algoritması elle yazılabilir — CDN yok, çevrimdışı çalışmalı).
 - `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`; renderer sadece `window.ferahla` API'sini görür.
 - Disk taraması: ana süreçte değil **worker_threads** içinde, `fs.promises.opendir` ile; symlink/junction (reparse point) **takip edilmez**;

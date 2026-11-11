@@ -264,6 +264,23 @@ function checkTrashable(target, opts = {}) {
   return { ok: true, realPath: loc.loc, isLink: loc.isLink, isDir: loc.isDir };
 }
 
+/**
+ * Renderer'dan gelen ve yalnızca GÖSTERİLECEK (silinmeyecek) bir yol için temel denetim:
+ * mutlak, '..' yok, geçerli karakterler, ve gerçekten var. Gerçek konumu döner.
+ */
+function checkExistingPath(target, opts = {}) {
+  const o = normalizeOpts(opts);
+  const P = pathFor(o.platform);
+  const pre = precheck(target, o.platform);
+  if (pre) return { ok: false, reason: pre };
+  if (isDriveRoot(target, o.platform)) {
+    try { o.lstat(target); return { ok: true, realPath: P.normalize(target) }; } catch (e) { return { ok: false, reason: 'not-found' }; }
+  }
+  const loc = realLocation(target, P, o.realpath, o.lstat);
+  if (loc.error) return { ok: false, reason: loc.error };
+  return { ok: true, realPath: loc.loc };
+}
+
 function normalizeOpts(opts) {
   const platform = opts.platform || process.platform;
   return {
@@ -279,6 +296,7 @@ function normalizeOpts(opts) {
 module.exports = {
   checkDeletable,
   checkTrashable,
+  checkExistingPath,
   protectedPaths,
   systemDirs,
   isStrictlyInside,
