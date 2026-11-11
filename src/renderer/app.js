@@ -399,7 +399,8 @@
     const rows = (r.results || []).map((x) => {
       const c = (state.categories || []).find((k) => k.id === x.id);
       const name = c ? loc(c.name) : x.id;
-      return `<li><span>${esc(name)}</span><span class="${x.error ? 'muted' : 'num'}">${x.error ? esc(t('result.err.' + x.error, {}, true) || t('result.errGeneric')) : esc(B(x.freedBytes || 0))}</span></li>`;
+      const err = x.error ? t('result.err.' + x.error, {}, true) || x.message || t('result.errGeneric') : '';
+      return `<li><span>${esc(name)}</span><span class="${x.error ? 'muted' : 'num'}">${x.error ? esc(err) : esc(B(x.freedBytes || 0))}</span></li>`;
     }).join('');
     if (rows) html += `<ul class="card result-list">${rows}</ul>`;
     if (r.skippedInUse > 0) html += `<p class="hint">${icon('info')}<span>${esc(t('result.inUse', { n: I.fmtNum(r.skippedInUse) }))}</span></p>`;
@@ -638,7 +639,7 @@
     }
     if (!d.ok) {
       state.scan.status = 'error';
-      state.scan.error = d.message || d.error || '';
+      state.scan.error = t('scan.err.' + d.error, {}, true) || d.message || '';
       announce(t('scan.error', { msg: state.scan.error }));
       rerenderIf('map'); renderNav();
       return;
@@ -863,7 +864,8 @@
       toast(t('trash.done', { n: done.length }), { label: t('history.openBin'), fn: () => call('openRecycleBin') });
     }
     if (failed.length || (isErr(r) && !r.failed)) {
-      toast(t('trash.failed', { n: failed.length || paths.length }) + (r && r.message ? ' ' + r.message : ''), null, 'warn');
+      const why = (failed[0] && failed[0].message) || (r && r.message) || '';
+      toast(t('trash.failed', { n: failed.length || paths.length }) + (why ? ' ' + why : ''), null, 'warn');
     }
     // durum güncelle
     const gone = new Set(done);
@@ -981,6 +983,7 @@
   }
   function historyActions(h) {
     if (h.action === 'trash') return `<button type="button" class="btn btn-secondary btn-sm" data-action="open-bin" data-fk="bin-${esc(h.id)}">${icon('trash')}${esc(t('history.openBin'))}</button>`;
+    if (h.undone) return `<span class="badge badge-neutral">${icon('undo')}${esc(t('history.wasUndone'))}</span>`;
     if (h.action === 'startup' && h.undoable) return `<button type="button" class="btn btn-secondary btn-sm" data-action="undo" data-id="${esc(h.id)}" data-fk="undo-${esc(h.id)}">${icon('undo')}${esc(t('history.undo'))}</button>`;
     if (h.action === 'clean') return `<span class="muted small" title="${esc(t('history.cleanNoUndoLong'))}">${esc(t('history.cleanNoUndo'))}</span>`;
     return '';

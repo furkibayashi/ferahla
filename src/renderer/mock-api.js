@@ -349,29 +349,29 @@
     { id: 'thumbnails', name: L('Küçük resim önizlemeleri', 'Thumbnail previews'), sizeBytes: 412 * MB, itemCount: 3, requiresAdmin: false, available: true,
       description: L('Klasörlerde gördüğünüz fotoğraf ve video önizlemeleri. Silinirse, bir klasörü ilk açtığınızda birkaç saniyede yeniden oluşur.',
         'The photo and video previews you see in folders. If deleted, they are rebuilt within seconds the next time you open a folder.') },
-    { id: 'browser-chrome', name: L('Google Chrome önbelleği', 'Google Chrome cache'), sizeBytes: 1.2 * GB, itemCount: 2300, requiresAdmin: false, available: true,
-      warning: L('Chrome şu an açık. Önce Chrome\'u kapatın, sonra "Yeniden kontrol et"e basın.', 'Chrome is open right now. Close Chrome first, then press "Check again".'),
+    { id: 'chrome', name: L('Google Chrome önbelleği', 'Google Chrome cache'), sizeBytes: 1.2 * GB, itemCount: 2300, requiresAdmin: false, available: true,
+      warning: L('Önce Chrome\'u kapatın — açıkken bazı dosyaları silinemez.', 'Close Chrome first — some files can\'t be removed while it\'s running.'),
       description: L('Ziyaret ettiğiniz sitelerin geçici kopyaları. Çerezleriniz, şifreleriniz, geçmişiniz ve yer imleriniz SİLİNMEZ. Siteler ilk açılışta bir an yavaş yüklenebilir.',
         'Temporary copies of websites you visited. Your cookies, passwords, history and bookmarks are NOT deleted. Sites may load a little slower the first time.') },
-    { id: 'browser-edge', name: L('Microsoft Edge önbelleği', 'Microsoft Edge cache'), sizeBytes: 640 * MB, itemCount: 1400, requiresAdmin: false, available: true,
+    { id: 'edge', name: L('Microsoft Edge önbelleği', 'Microsoft Edge cache'), sizeBytes: 640 * MB, itemCount: 1400, requiresAdmin: false, available: true,
       description: L('Ziyaret ettiğiniz sitelerin geçici kopyaları. Çerezleriniz, şifreleriniz, geçmişiniz ve yer imleriniz SİLİNMEZ.',
         'Temporary copies of websites you visited. Your cookies, passwords, history and bookmarks are NOT deleted.') },
-    { id: 'browser-firefox', name: L('Firefox önbelleği', 'Firefox cache'), sizeBytes: 0, itemCount: 0, requiresAdmin: false, available: false,
+    { id: 'firefox', name: L('Firefox önbelleği', 'Firefox cache'), sizeBytes: 0, itemCount: 0, requiresAdmin: false, available: false,
       description: L('Ziyaret ettiğiniz sitelerin geçici kopyaları.', 'Temporary copies of websites you visited.') },
-    { id: 'browser-brave', name: L('Brave önbelleği', 'Brave cache'), sizeBytes: 0, itemCount: 0, requiresAdmin: false, available: false,
+    { id: 'brave', name: L('Brave önbelleği', 'Brave cache'), sizeBytes: 0, itemCount: 0, requiresAdmin: false, available: false,
       description: L('Ziyaret ettiğiniz sitelerin geçici kopyaları.', 'Temporary copies of websites you visited.') },
-    { id: 'browser-opera', name: L('Opera önbelleği', 'Opera cache'), sizeBytes: 0, itemCount: 0, requiresAdmin: false, available: false,
+    { id: 'opera', name: L('Opera önbelleği', 'Opera cache'), sizeBytes: 0, itemCount: 0, requiresAdmin: false, available: false,
       description: L('Ziyaret ettiğiniz sitelerin geçici kopyaları.', 'Temporary copies of websites you visited.') },
-    { id: 'app-spotify', name: L('Spotify önbelleği', 'Spotify cache'), sizeBytes: 2.1 * GB, itemCount: 1600, requiresAdmin: false, available: true,
+    { id: 'spotify', name: L('Spotify önbelleği', 'Spotify cache'), sizeBytes: 2.1 * GB, itemCount: 1600, requiresAdmin: false, available: true,
       description: L('Dinlediğiniz şarkıların geçici kopyaları. Silinirse, şarkılar bir sonraki dinleyişte yeniden indirilir.',
         'Temporary copies of songs you played. If deleted, songs are downloaded again the next time you play them.') },
-    { id: 'app-discord', name: L('Discord önbelleği', 'Discord cache'), sizeBytes: 820 * MB, itemCount: 1900, requiresAdmin: false, available: true,
+    { id: 'discord', name: L('Discord önbelleği', 'Discord cache'), sizeBytes: 820 * MB, itemCount: 1900, requiresAdmin: false, available: true,
       description: L('Sohbetlerde gördüğünüz resim ve videoların geçici kopyaları. Mesajlarınız silinmez.',
         'Temporary copies of images and videos you saw in chats. Your messages are not deleted.') },
-    { id: 'app-teams', name: L('Microsoft Teams önbelleği', 'Microsoft Teams cache'), sizeBytes: 380 * MB, itemCount: 700, requiresAdmin: false, available: true,
+    { id: 'teams', name: L('Microsoft Teams önbelleği', 'Microsoft Teams cache'), sizeBytes: 380 * MB, itemCount: 700, requiresAdmin: false, available: true,
       description: L('Teams\'in hızlı açılmak için tuttuğu geçici dosyalar. Sohbetleriniz ve dosyalarınız silinmez.',
         'Temporary files Teams keeps to open faster. Your chats and files are not deleted.') },
-    { id: 'app-steam', name: L('Steam web önbelleği', 'Steam web cache'), sizeBytes: 290 * MB, itemCount: 800, requiresAdmin: false, available: true,
+    { id: 'steam', name: L('Steam web önbelleği', 'Steam web cache'), sizeBytes: 290 * MB, itemCount: 800, requiresAdmin: false, available: true,
       description: L('Steam mağaza sayfalarının geçici kopyaları. Oyunlarınız ve kayıtlarınız silinmez.',
         'Temporary copies of Steam store pages. Your games and saves are not deleted.') },
     { id: 'crash-dumps', name: L('Çökme raporları', 'Crash dumps'), sizeBytes: 1.1 * GB, itemCount: 9, requiresAdmin: false, available: true,
@@ -381,9 +381,12 @@
       description: L('Windows\'un Microsoft\'a göndermek için hazırladığı hata raporları. Silinmeleri güvenlidir.',
         'Error reports Windows prepared to send to Microsoft. Safe to delete.') },
   ].map((c) => ({ ...c, sizeBytes: Math.round(c.sizeBytes) }));
+  // Gerçek ana süreç gibi: yönetici değilken yönetici gerektiren kategorilere uyarı eklenir.
+  if (!opts.has('admin')) categories.forEach((c) => { if (c.requiresAdmin && c.available) c.warning = L('Bu kategori yönetici izni gerektirir. Temizlemek için Ferahla\'yı sağ tıklayıp "Yönetici olarak çalıştır" ile açın.', 'This category needs administrator rights. To clean it, right-click Ferahla and choose "Run as administrator".'); });
   if (opts.has('clean')) categories.forEach((c) => { if (c.id !== 'windows-update') { c.sizeBytes = c.id === 'user-temp' ? 3 * MB : 0; c.itemCount = c.sizeBytes ? 12 : 0; } delete c.warning; });
 
   const K = (description, advice) => ({ description, advice });
+  const UNKNOWN = K(L('Bu program sözlüğümüzde yok. Ne olduğunu bilmiyorsanız açık bırakın.', 'This program is not in our list. If you are not sure what it is, keep it enabled.'), 'unknown');
   const startupItems = [
     { id: 'hkcu-onedrive', name: 'Microsoft OneDrive', command: '"C:\\Users\\Elif\\AppData\\Local\\Microsoft\\OneDrive\\OneDrive.exe" /background', source: 'HKCU Run', enabled: true, publisher: 'Microsoft Corporation',
       known: K(L('Dosyalarınızı buluta eşitler. OneDrive kullanıyorsanız açık bırakın; kullanmıyorsanız kapatabilirsiniz.', 'Syncs your files to the cloud. Keep it on if you use OneDrive; otherwise you can turn it off.'), 'keep') },
@@ -407,8 +410,8 @@
       known: K(L('Edge\'i siz açmadan arka planda hazırlar. Kapatmak güvenlidir; Edge yine normal çalışır.', 'Prepares Edge in the background before you open it. Safe to turn off; Edge still works normally.'), 'safe-to-disable') },
     { id: 'hkcu-adobe', name: 'Adobe Creative Cloud', command: '"C:\\Program Files\\Adobe\\Adobe Creative Cloud\\ACC\\Creative Cloud.exe" --showwindow=false', source: 'HKCU Run', enabled: true, publisher: 'Adobe Inc.',
       known: K(L('Adobe uygulamalarının güncelleyicisi. Kapatabilirsiniz; Photoshop gibi programlar açıldığında yine çalışır.', 'Updater for Adobe apps. You can turn it off; apps like Photoshop still work when opened.'), 'safe-to-disable') },
-    { id: 'hkcu-logitech', name: 'LGHUB', command: '"C:\\Program Files\\LGHUB\\lghub.exe" --background', source: 'HKCU Run', enabled: true, publisher: 'Logitech' },
-    { id: 'hkcu-updtool', name: 'UpdaterTool', command: '"C:\\Users\\Elif\\AppData\\Roaming\\UpdTool\\upd.exe" /silent', source: 'HKCU Run', enabled: true },
+    { id: 'hkcu-logitech', name: 'LGHUB', command: '"C:\\Program Files\\LGHUB\\lghub.exe" --background', source: 'HKCU Run', enabled: true, publisher: 'Logitech', known: UNKNOWN },
+    { id: 'hkcu-updtool', name: 'UpdaterTool', command: '"C:\\Users\\Elif\\AppData\\Roaming\\UpdTool\\upd.exe" /silent', source: 'HKCU Run', enabled: true, known: UNKNOWN },
     { id: 'startup-zoom', name: 'Zoom', command: 'C:\\Users\\Elif\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\Zoom.lnk', source: 'Startup folder', enabled: false, publisher: 'Zoom Video Communications, Inc.',
       known: K(L('Görüntülü görüşme uygulaması. Toplantınız olduğunda açılır; açılışta başlaması gerekmez.', 'Video meeting app. It opens when you have a meeting; it does not need to start with Windows.'), 'safe-to-disable') },
   ];
@@ -589,11 +592,11 @@
       for (const id of ids) {
         const c = categories.find((x) => x.id === id);
         if (!c || !c.available) { results.push({ id, freedBytes: 0, error: 'not-available' }); continue; }
-        if (c.requiresAdmin && !opts.has('admin')) { results.push({ id, freedBytes: 0, error: 'needs-admin' }); continue; }
+        if (c.requiresAdmin && !opts.has('admin')) { results.push({ id, freedBytes: 0, error: 'requires-admin' }); continue; }
         for (let p = 0; p <= 100; p += 20) { emit('cleanProgress', { id, percent: p }); await wait(id === 'user-temp' ? 120 : 60); }
         let freed = c.sizeBytes;
         if (id === 'user-temp') { freed = c.sizeBytes - 38 * MB; skippedInUse += 14; c.sizeBytes = 38 * MB; c.itemCount = 14; }
-        else if (id === 'app-discord') { freed = c.sizeBytes - 4 * MB; skippedInUse += 3; c.sizeBytes = 4 * MB; c.itemCount = 3; }
+        else if (id === 'discord') { freed = c.sizeBytes - 4 * MB; skippedInUse += 3; c.sizeBytes = 4 * MB; c.itemCount = 3; }
         else { c.sizeBytes = 0; deleted += c.itemCount; c.itemCount = 0; }
         freedBytes += freed; deleted += 200;
         results.push({ id, freedBytes: freed });
@@ -630,7 +633,7 @@
       if (!h || !h.undoable) return { ok: false, error: 'not-undoable', message: 'Bu işlem geri alınamaz.' };
       const it = startupItems.find((s) => s.id === h._startupId);
       if (it) it.enabled = !h._enabled;
-      h.undoable = false;
+      h.undoable = false; h.undone = true;
       if (it) addHistory({ action: 'startup', undoable: false,
         summary: it.enabled ? L('Geri alındı: ' + it.name + ' yeniden açılışta başlayacak', 'Undone: ' + it.name + ' will start with Windows again')
           : L('Geri alındı: ' + it.name + ' artık açılışta başlamıyor', 'Undone: ' + it.name + ' no longer starts with Windows') });
