@@ -1039,8 +1039,18 @@
   // ======================================================================
   // diyalog & bildirim
   // ======================================================================
+  /*
+   * Onay penceresi. Deterministik olmalı (klavye akışı ve e2e testleri buna dayanır):
+   * - Sonuç, eşzamansız 'close' olayı / paylaşılan returnValue üzerinden DEĞİL, düğmenin kendi tıklamasında senkron belirlenir.
+   * - Aynı anda tek pencere: açıkken gelen ikinci istek (ör. aynı tuşun kapanıştan sonra açan düğmeye düşmesi) yok sayılır.
+   * - Odak showModal'dan hemen sonra senkron olarak hedef düğmeye verilir; Enter/Space hemen çalışır.
+   * - Kapanınca odak açan öğeye döner (yeniden çizildiyse aynı kimlikli yeni öğeye).
+   */
+  let dialogBusy = false;
   function dialog({ title, body, confirm, cancel, confirmIcon, focus = 'confirm', tone = 'primary', safeDefault = false }) {
     const dlg = $('#dlg');
+    if (dialogBusy || dlg.open) return Promise.resolve(false);
+    dialogBusy = true;
     $('#dlg-title').textContent = title;
     $('#dlg-body').innerHTML = body;
     const okBtn = $('#dlg-ok'), noBtn = $('#dlg-cancel');
@@ -1050,21 +1060,45 @@
     noBtn.className = 'btn btn-' + (safeDefault ? 'primary' : 'secondary');
     noBtn.textContent = cancel || t('common.cancel');
     const opener = document.activeElement;
+    const openerId = opener && opener.id;
     return new Promise((resolve) => {
-      const done = () => {
-        dlg.removeEventListener('close', done);
-        resolve(dlg.returnValue === 'ok');
-        if (opener && document.body.contains(opener)) opener.focus();
+      let settled = false;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        okBtn.removeEventListener('click', onOk);
+        noBtn.removeEventListener('click', onNo);
+        dlg.removeEventListener('cancel', onCancel);
+        dlg.removeEventListener('close', onClose);
+        if (dlg.open) dlg.close(ok ? 'ok' : 'cancel');
+        dialogBusy = false;
+        const back = opener && document.body.contains(opener) ? opener : openerId ? document.getElementById(openerId) : null;
+        if (back && typeof back.focus === 'function') back.focus();
+        resolve(ok);
       };
-      dlg.addEventListener('close', done);
+      const onOk = (e) => { e.preventDefault(); finish(true); };
+      const onNo = (e) => { e.preventDefault(); finish(false); };
+      const onCancel = (e) => { e.preventDefault(); finish(false); }; // Esc
+      // Önceki pencerenin (ör. Esc ile kapanan) 'close' olayı eşzamansız kuyruğa girer ve bu pencere açıldıktan SONRA
+      // gelebilir. Pencere hâlâ açıksa olay bize ait değildir: yok say. Gerçekten başka bir yoldan kapandıysa vazgeçilmiş say.
+      const onClose = () => { if (!dlg.open) finish(false); };
+      okBtn.addEventListener('click', onOk);
+      noBtn.addEventListener('click', onNo);
+      dlg.addEventListener('cancel', onCancel);
+      dlg.addEventListener('close', onClose);
       dlg.returnValue = '';
       dlg.showModal();
-      (focus === 'cancel' ? noBtn : okBtn).focus();
+      (focus === 'cancel' ? noBtn : okBtn).focus({ preventScroll: true });
     });
   }
-  function toast(msg, action, tone) {
+  function dismissToasts(key) {
+    document.querySelectorAll(`#toasts .toast[data-key="${CSS.escape(key)}"]`).forEach((x) => x.remove());
+  }
+  function toast(msg, action, tone, key) {
     const box = $('#toasts');
+    if (key) dismissToasts(key);
     const el = document.createElement('div');
+    if (key) el.dataset.key = key;
     el.className = 'toast' + (tone ? ' toast-' + tone : '');
     el.innerHTML = `${icon(tone === 'warn' ? 'alert' : 'check')}<span class="toast-msg">${esc(msg)}</span>`;
     if (action) {
@@ -1256,6 +1290,8 @@
     const path = String(p || '').trim();
     const ex = state.settings.excludedPaths || [];
     state.settingsDraft = path;
+    // Önceki denemeden kalan "Klasör eklendi." bildirimi yeni bir hatanın yanında yanıltıcı olur.
+    dismissToasts('ex-add');
     if (!path) { state.settingsError = t('settings.errEmpty'); render(); return; }
     if (ex.some((x) => normPath(x) === normPath(path))) { state.settingsError = t('settings.errDup'); render(); return; }
     if (!looksAbsolute(path)) { state.settingsError = t('settings.errInvalid'); render(); focusExInput(); return; }
@@ -1273,7 +1309,7 @@
     }
     state.settingsDraft = '';
     render();
-    toast(t('settings.added'));
+    toast(t('settings.added'), null, null, 'ex-add');
     focusExInput();
   }
   function focusExInput() { const inp = $('#ex-input'); if (inp) inp.focus(); }
