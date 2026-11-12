@@ -99,11 +99,37 @@ function parseCommandExe(cmd, env = process.env) {
   return c.split(/\s+/)[0];
 }
 
-/** Bilinen program sözlüğünde ara. */
-function matchKnown(name, command) {
-  const hay = `${name || ''} ${command || ''}`.toLowerCase();
-  for (const k of KNOWN) {
-    if (k.match.some((m) => hay.includes(m))) return { description: k.description, advice: k.advice };
+const escapeRe = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const KNOWN_COMPILED = KNOWN.map((k) => ({
+  k,
+  exes: k.match.filter((m) => /\.exe$/.test(m)),
+  words: k.match.filter((m) => !/\.exe$/.test(m)).map((m) => new RegExp(`(^|[^a-z0-9])${escapeRe(m)}($|[^a-z0-9])`)),
+}));
+
+/** Komut satırındaki çalıştırılabilir dosya adları (küçük harf): "...\\Update.exe --processStart Discord.exe" -> [update.exe, discord.exe] */
+function commandExeNames(command, env) {
+  const out = new Set();
+  const first = parseCommandExe(command, env);
+  if (first) out.add(first.split(/[\\/]/).pop().toLowerCase());
+  for (const m of String(command || '').matchAll(/([^\s"\\/]+\.exe)\b/gi)) out.add(m[1].toLowerCase());
+  return [...out];
+}
+
+/**
+ * Bilinen program sözlüğünde ara. Alt dize DEĞİL:
+ *  - ".exe" ile biten eşleyiciler komuttaki exe adlarıyla birebir karşılaştırılır,
+ *  - diğerleri program adında ve exe adında (uzantısız) KELİME SINIRIYLA aranır
+ *    (TeamSpeak ≠ Teams, "Cooperative" ≠ Opera). Komut satırının geri kalanına (klasör yolları) bakılmaz.
+ * Eşleşme yoksa null (arayüzde advice:'unknown').
+ */
+function matchKnown(name, command, env = process.env) {
+  const nm = String(name || '').toLowerCase();
+  const exes = commandExeNames(command, env);
+  const stems = exes.map((e) => e.replace(/\.[a-z0-9]+$/, ''));
+  for (const { k, exes: kx, words } of KNOWN_COMPILED) {
+    if (kx.some((x) => exes.includes(x)) || words.some((re) => re.test(nm) || stems.some((st) => re.test(st)))) {
+      return { description: k.description, advice: k.advice };
+    }
   }
   return null;
 }
@@ -324,6 +350,7 @@ module.exports = {
   parseCommandExe,
   expandEnv,
   matchKnown,
+  commandExeNames,
   parseDesktopEntry,
   desktopEnabled,
   setDesktopEnabledText,

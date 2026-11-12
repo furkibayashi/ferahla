@@ -44,7 +44,7 @@ test('cleanRoot: kökün içeriği silinir, kök kalır; symlink hedefi korunur'
   assert.ok(fs.existsSync('/etc/hostname') || fs.existsSync('/etc/passwd'));
 });
 
-test('cleanRoot: kilitli (kullanımda) dosyalar atlanır ve sayılır', async (t) => {
+test('cleanRoot: kilitli (EBUSY) ve izinsiz (EPERM) dosyalar ayrı sayılır', async (t) => {
   // Not: root olarak çalışan Linux konteynerinde gerçek dosya kilidi (Windows paylaşım ihlali) taklit edilemez;
   // bu yüzden unlink enjekte edilip EBUSY/EPERM fırlatılarak taklit edilir.
   const tmp = makeTmp();
@@ -62,7 +62,8 @@ test('cleanRoot: kilitli (kullanımda) dosyalar atlanır ve sayılır', async (t
   const r = await cleanup.cleanRoot({ path: root }, { platform: 'linux', fs: { unlink } });
   assert.equal(r.deleted, 1);
   assert.equal(r.freedBytes, 100);
-  assert.equal(r.skippedInUse, 2);
+  assert.equal(r.skippedInUse, 1, 'EBUSY = kullanımda');
+  assert.equal(r.skippedNoAccess, 1, 'EPERM = izin yok (kullanımda DEĞİL)');
   assert.ok(fs.existsSync(locked1) && fs.existsSync(locked2));
   assert.ok(fs.existsSync(tmp.p('Temp/alt')), 'içinde kilitli dosya kalan klasör silinmez');
 });
@@ -140,6 +141,8 @@ test('getCategories / cleanCategories (geçici beyaz liste kökleri)', async (t)
   assert.equal(res.freedBytes, 4600);
   assert.equal(res.deleted, 2);
   assert.equal(res.skippedInUse, 0);
+  assert.equal(res.skippedNoAccess, 0);
+  assert.ok(res.results.every((x) => typeof x.skippedNoAccess === 'number'));
   const rb = Object.fromEntries(res.results.map((x) => [x.id, x]));
   assert.equal(rb['windows-temp'].error, 'requires-admin');
   assert.equal(rb.yok.error, 'unknown-category');
@@ -179,4 +182,22 @@ test('Linux platformu (FERAHLA_TEST_ROOT): çöp kutusu ölçümü ve boşaltma'
   assert.deepEqual(fs.readdirSync(path.join(trash, 'files')), []);
   assert.deepEqual(fs.readdirSync(path.join(trash, 'info')), []);
   assert.ok(fs.existsSync(tmp.p('home/.cache/thumbnails')));
+});
+
+test('cleanCategories: izin hataları skippedNoAccess, meşgul dosyalar skippedInUse', async (t) => {
+  const tmp = makeTmp();
+  t.after(() => tmp.cleanup());
+  const a = tmp.file('c/izinsiz.bin', Buffer.alloc(10));
+  const b = tmp.file('c/mesgul.bin', Buffer.alloc(10));
+  tmp.file('c/serbest.bin', Buffer.alloc(10));
+  const fsp = require('fs/promises');
+  const unlink = async (p) => {
+    if (p === a) throw Object.assign(new Error('EACCES'), { code: 'EACCES' });
+    if (p === b) throw Object.assign(new Error('EBUSY'), { code: 'EBUSY' });
+    return fsp.unlink(p);
+  };
+  const platform = fakePlatform({ discord: [{ path: tmp.p('c') }] });
+  const r = await cleanup.cleanCategories(['discord'], { platform, isAdmin: false, fs: { unlink } });
+  assert.deepEqual([r.deleted, r.skippedInUse, r.skippedNoAccess], [1, 1, 1]);
+  assert.deepEqual([r.results[0].skippedInUse, r.results[0].skippedNoAccess], [1, 1]);
 });

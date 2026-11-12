@@ -129,6 +129,8 @@ if (!gotLockNow && !ELEVATED) {
       getWindow: () => win,
       rendererIndex: RENDERER_INDEX,
       onSettingsChanged: applyTheme,
+      // Ferahla'nın kendi verisi ve kurulum klasörleri: trashItems bunların altına asla dokunmaz.
+      appProtectedPaths: [userData, app.getAppPath(), path.dirname(process.execPath), process.env.PORTABLE_EXECUTABLE_DIR].filter(Boolean),
       pickFolder: async () => {
         const opts = { properties: ['openDirectory', 'dontAddToRecent'] };
         const r = win && !win.isDestroyed() ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);

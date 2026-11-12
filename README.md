@@ -83,6 +83,31 @@ Test için ortam değişkenleri: `FERAHLA_USER_DATA` (ayarlar/geçmiş klasörü
 yollarını — önbellekler, çöp kutusu, autostart, geçici dosyalar — bu klasörün altına yönlendirir; gerçek dosyalara
 dokunmadan temizlik denemek için).
 
+## Geliştiriciler için: Windows'ta elle doğrulanması gerekenler
+
+Ferahla Linux konteynerinde geliştirilip test edildi; Windows'a özgü kod ayrıştırma mantığı ayrılarak örnek çıktılarla
+birim testlendi. Aşağıdakiler gerçek Windows'ta doğrulanmalıdır:
+
+1. **Kayıt defteri okuma:** `reg query` çıktısı `chcp 65001` ile UTF-8 geliyor mu (Türkçe karakterli değer adları);
+   HKCU/HKLM `Run` ve `WOW6432Node` öğeleri listeleniyor mu.
+2. **Başlangıç aç/kapat:** `reg add` ile `StartupApproved\Run` (02 = açık, 03 + FILETIME = kapalı) yazılıyor ve Görev Yöneticisi >
+   Başlangıç aynı durumu gösteriyor mu; HKLM yalnızca yöneticiyle; Run değerlerinden hiçbir şey silinmiyor; Geçmiş'ten geri al.
+3. **Junction / reparse point:** taramada takip edilmiyor (`C:\Documents and Settings` gibi); OneDrive yer tutucuları indirme
+   tetiklemiyor; temizlikte junction yalnızca bağlantı olarak `unlink` ile kaldırılıyor, hedefine dokunulmuyor.
+4. **Sürücüler ve yetki:** `Get-CimInstance Win32_LogicalDisk` (yedekleri `wmic`, `fs.statfs`); `net session` ve PowerShell
+   `IsInRole` ile yönetici tespiti.
+5. **Geri Dönüşüm Kutusu:** `$Recycle.Bin\<SID>` boyut/öğe sayısı (`whoami /user`), `Clear-RecycleBin` ve COM yedeği,
+   `explorer shell:RecycleBinFolder`; `shell.trashItem` sonrası Gezgin'den "Geri yükle".
+6. **Açık uygulama uyarısı:** `tasklist` ile Chrome/Edge/Firefox/Discord algılanıyor mu (Edge çoğu zaman arka planda çalışır).
+7. **Kilitli ve izinsiz dosyalar:** açık dosyalar `EBUSY` → `skippedInUse`; erişim reddi `EPERM/EACCES` → `skippedNoAccess`;
+   salt okunur öznitelikte `chmod` sonrası yeniden deneme. (Windows'ta bazı "kullanımda" durumları `EPERM` olarak gelebilir.)
+8. **Kategori yolları:** Teams (yeni EBWebView / klasik), Opera GX, Spotify (klasik ve Mağaza sürümü), Steam `htmlcache`,
+   `thumbcache_*.db`, CrashDumps, WER — profil klasöründe çerez/şifre/geçmiş dosyalarına dokunulmadığını doğrulayın.
+9. **Paket:** portable `.exe` açılıyor; tarama worker'ı `app.asar.unpacked` içinden yükleniyor; 8.3 kısa adlı `%TEMP%`;
+   `relaunchAsAdmin` (UAC kabul/iptal, `PORTABLE_EXECUTABLE_FILE`) ve tek örnek kilidinin `--elevated` ile devri.
+10. **Başlangıç ayrıntıları:** `.lnk` hedefi ve exe yayıncısı için PowerShell betiği; bilinen program eşleşmesi gerçek listeyle
+    (Steam, Teams, TeamSpeak, Opera GX).
+
 ## Lisans
 
 MIT

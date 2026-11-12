@@ -4,7 +4,8 @@
  * - Yalnızca kategori köklerinin İÇERİĞİ silinir; kökün kendisi asla.
  * - Her dosya silinmeden önce safety.checkDeletable ile denetlenir (realpath, symlink kaçışı...).
  * - Linkler takip edilmez; yalnızca bağlantının kendisi kaldırılır.
- * - Kilitli/kullanımdaki dosyalar atlanır ve sayılır (skippedInUse).
+ * - Kilitli/kullanımdaki dosyalar (EBUSY) atlanır ve sayılır (skippedInUse); izin hataları (EPERM/EACCES) ayrıca
+ *   sayılır (skippedNoAccess) — kullanıcıya "kullanımda" denmesin.
  */
 const fsp = require('fs/promises');
 const { checkDeletable } = require('./safety');
@@ -102,7 +103,15 @@ const CATEGORIES = [
 ];
 
 const BY_ID = new Map(CATEGORIES.map((c) => [c.id, c]));
-const IN_USE_CODES = new Set(['EBUSY', 'EPERM', 'EACCES', 'ETXTBSY']);
+const IN_USE_CODES = new Set(['EBUSY', 'ETXTBSY']);
+const NO_ACCESS_CODES = new Set(['EPERM', 'EACCES', 'EROFS']);
+
+/** Hata kodunu say: kullanımda / izin yok / diğer. */
+function countError(res, code) {
+  if (IN_USE_CODES.has(code)) res.skippedInUse++;
+  else if (NO_ACCESS_CODES.has(code)) res.skippedNoAccess++;
+  else res.failed++;
+}
 
 function adminWarning() {
   return T('Bu kategori yönetici izni gerektirir. Temizlemek için Ferahla\'yı sağ tıklayıp "Yönetici olarak çalıştır" ile açın.',
@@ -184,14 +193,14 @@ async function getCategories(ctx) {
  * Bir kökün içeriğini sil (kök kalır).
  * @param {{path:string, pattern?:RegExp, minAgeMs?:number, ownedOnly?:boolean}} root
  * @param {object} o { platform?:'win32'|'linux', now?, fs?:{unlink,rmdir,lstat,readdir,chmod}, onFile?(), safetyOpts? }
- * @returns {Promise<{deleted, freedBytes, skippedInUse, refused, failed}>}
+ * @returns {Promise<{deleted, freedBytes, skippedInUse, skippedNoAccess, refused, failed}>}
  */
 async function cleanRoot(root, o = {}) {
   const f = { unlink: fsp.unlink, rmdir: fsp.rmdir, lstat: fsp.lstat, readdir: fsp.readdir, chmod: fsp.chmod, ...(o.fs || {}) };
   const platform = o.platform || process.platform;
   const safetyOpts = { platform, ...(o.safetyOpts || {}) };
   const nodePath = platform === 'win32' ? require('path').win32 : require('path').posix;
-  const res = { deleted: 0, freedBytes: 0, skippedInUse: 0, refused: 0, failed: 0 };
+  const res = { deleted: 0, freedBytes: 0, skippedInUse: 0, skippedNoAccess: 0, refused: 0, failed: 0 };
   const cutoff = root.minAgeMs ? (o.now || Date.now()) - root.minAgeMs : Infinity;
   const uid = root.ownedOnly && typeof process.getuid === 'function' ? process.getuid() : undefined;
   const onFile = o.onFile || (() => {});
@@ -221,7 +230,7 @@ async function cleanRoot(root, o = {}) {
     try {
       ents = await f.readdir(dir, { withFileTypes: true });
     } catch (e) {
-      if (IN_USE_CODES.has(e.code)) res.skippedInUse++; else if (e.code !== 'ENOENT') res.failed++;
+      if (e.code !== 'ENOENT') countError(res, e.code);
       return false;
     }
     let allGone = true;
@@ -260,7 +269,7 @@ async function cleanRoot(root, o = {}) {
       } catch (e) {
         if (e.code === 'ENOENT') continue;
         allGone = false;
-        if (IN_USE_CODES.has(e.code)) res.skippedInUse++; else res.failed++;
+        countError(res, e.code);
       }
       onFile(st.isSymbolicLink() ? 0 : st.size);
     }
@@ -279,10 +288,10 @@ async function cleanRoot(root, o = {}) {
 async function cleanCategories(ids, ctx) {
   const { platform, env = process.env, isAdmin = false } = ctx;
   const onProgress = ctx.onProgress || (() => {});
-  const out = { ok: true, freedBytes: 0, deleted: 0, skippedInUse: 0, results: [] };
+  const out = { ok: true, freedBytes: 0, deleted: 0, skippedInUse: 0, skippedNoAccess: 0, results: [] };
   const uniq = [...new Set(Array.isArray(ids) ? ids : [])];
   for (const id of uniq) {
-    const r = { id, freedBytes: 0, deleted: 0, skippedInUse: 0 };
+    const r = { id, freedBytes: 0, deleted: 0, skippedInUse: 0, skippedNoAccess: 0 };
     out.results.push(r);
     if (!BY_ID.has(id)) { r.error = 'unknown-category'; continue; }
     if (platform.requiresAdmin(id) && !isAdmin) { r.error = 'requires-admin'; continue; }
@@ -297,6 +306,7 @@ async function cleanCategories(ids, ctx) {
           for (const root of platform.recycleBinRoots(env)) {
             const c = await cleanRoot(root, ctx);
             r.skippedInUse += c.skippedInUse;
+            r.skippedNoAccess += c.skippedNoAccess;
           }
         }
         const after = await platform.getRecycleBin({ env });
@@ -325,6 +335,7 @@ async function cleanCategories(ids, ctx) {
           r.freedBytes += c.freedBytes;
           r.deleted += c.deleted;
           r.skippedInUse += c.skippedInUse;
+          r.skippedNoAccess += c.skippedNoAccess;
         }
       }
     } catch (e) {
@@ -334,6 +345,7 @@ async function cleanCategories(ids, ctx) {
     out.freedBytes += r.freedBytes;
     out.deleted += r.deleted;
     out.skippedInUse += r.skippedInUse;
+    out.skippedNoAccess += r.skippedNoAccess;
   }
   out.ok = out.results.length === 0 || out.results.some((r) => !r.error);
   return out;

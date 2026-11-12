@@ -170,6 +170,22 @@ async function cleanupRoots(id, { env = process.env } = {}) {
   }
 }
 
+/**
+ * Uygulama verisi kökleri: altındaki hiçbir şey "Büyük/Kopya dosyalar" üzerinden çöpe taşınmaz
+ * (tarayıcı profilleri, uygulama ayarları; bunlar için Güvenli Temizlik kategorileri vardır).
+ */
+function appDataRoots({ env = process.env } = {}) {
+  const e = envPaths(env);
+  return [
+    e.local, e.roaming, P.join(e.profile, 'AppData', 'LocalLow'),
+    P.join(e.local, 'Google', 'Chrome', 'User Data'),
+    P.join(e.local, 'Microsoft', 'Edge', 'User Data'),
+    P.join(e.local, 'BraveSoftware', 'Brave-Browser', 'User Data'),
+    P.join(e.roaming, 'Opera Software'), P.join(e.local, 'Opera Software'),
+    P.join(e.roaming, 'Mozilla', 'Firefox'), P.join(e.local, 'Mozilla', 'Firefox'),
+  ];
+}
+
 const PROCESS_NAMES = {
   chrome: ['chrome.exe'],
   edge: ['msedge.exe'],
@@ -237,6 +253,7 @@ module.exports = {
   isAdmin,
   listProcesses,
   cleanupRoots,
+  appDataRoots,
   processNames,
   requiresAdmin,
   getRecycleBin,

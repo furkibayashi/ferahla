@@ -97,6 +97,18 @@ async function cleanupRoots(id, { env = process.env } = {}) {
   }
 }
 
+/** Uygulama verisi kökleri (bkz. win32.appDataRoots). */
+function appDataRoots({ env = process.env } = {}) {
+  const { home } = bases(env);
+  const cache = P.join(home, '.cache');
+  const config = P.join(home, '.config');
+  return [
+    cache, config, P.join(home, '.local', 'share'), P.join(home, '.mozilla'),
+    P.join(config, 'google-chrome'), P.join(config, 'chromium'), P.join(config, 'microsoft-edge'),
+    P.join(config, 'BraveSoftware'), P.join(config, 'opera'),
+  ];
+}
+
 const PROCESS_NAMES = {
   chrome: ['chrome', 'chromium', 'chromium-browse'],
   edge: ['msedge'],
@@ -144,6 +156,7 @@ module.exports = {
   isAdmin,
   listProcesses,
   cleanupRoots,
+  appDataRoots,
   processNames,
   requiresAdmin,
   getRecycleBin,

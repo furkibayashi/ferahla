@@ -69,7 +69,9 @@ findDuplicates({ minBytes? }) -> { groups:[{ hash, sizeBytes, files:[{ path, mti
 trashItems(paths:string[]) -> { ok, trashed:number, failed:[{ path, error }], freedBytes }
 getCleanupCategories() -> [{ id, name:{tr,en}, description:{tr,en}, sizeBytes, itemCount, requiresAdmin:boolean,
                              available:boolean, warning?:{tr,en} /* ör. tarayıcı açık */ }]
-cleanCategories(ids:string[]) -> { ok, freedBytes, deleted:number, skippedInUse:number, results:[{ id, freedBytes, error? }] }
+cleanCategories(ids:string[]) -> { ok, freedBytes, deleted:number, skippedInUse:number, skippedNoAccess:number,
+                                 results:[{ id, freedBytes, deleted, skippedInUse, skippedNoAccess, error? }] }
+                                 // skippedInUse: kilitli/meşgul (EBUSY); skippedNoAccess: izin yok (EPERM/EACCES)
 onCleanProgress(cb) -> unsubscribe  // cb({ id, percent })
 getStartupItems() -> [{ id, name, command, source:'HKCU Run'|'HKLM Run'|'Startup folder'|'Autostart', enabled:boolean,
                         publisher?, known?:{ description:{tr,en}, advice:'safe-to-disable'|'keep'|'unknown' } }]

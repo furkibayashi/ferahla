@@ -92,7 +92,6 @@
     "name": "Zoom",
     "match": [
       "zoom.exe",
-      "\\zoom\\",
       "zoom"
     ],
     "advice": "safe-to-disable",
@@ -225,9 +224,7 @@
     "id": "edge-autolaunch",
     "name": "Microsoft Edge (hızlı başlatma)",
     "match": [
-      "microsoftedgeautolaunch",
-      "msedge.exe --no-startup-window",
-      "--win-session-start"
+      "microsoftedgeautolaunch"
     ],
     "advice": "safe-to-disable",
     "description": {
@@ -503,7 +500,6 @@
     "match": [
       "opera gx stable",
       "opera stable",
-      "launcher.exe\" --scheduledautoupdate",
       "opera"
     ],
     "advice": "safe-to-disable",

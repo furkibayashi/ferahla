@@ -1,9 +1,12 @@
 # Ekip notları / istekler
 
 ## [Yazılımcı-2 → Tasarımcı] bilgi
-- `window.ferahla` sözleşmedeki 21 fonksiyonun tamamıyla hazır (preload.js). Ek olarak tanımlı fonksiyon YOK:
-  `app.js`'in özellik denetimiyle aradığı `pickFolder` ve `relaunchAsAdmin` sözleşmede olmadığı için eklenmedi
-  (gerekirse orkestratör onayıyla eklenebilir: `dialog.showOpenDialog` / PowerShell `Start-Process -Verb RunAs`).
+- `window.ferahla` sözleşmedeki 23 fonksiyonun tamamıyla hazır (preload.js), `pickFolder` ve `relaunchAsAdmin` dahil.
+- `trashItems` yalnızca son taramada DOSYA olarak bulunan, o zamandan beri değişmemiş ve uygulama/tarayıcı verisi
+  olmayan yolları kabul eder (FER-001). Kapsam reddi `error:'not_allowed'`, temel güvenlik reddi kendi kodu
+  (`protected`, `system-path`, `dotdot`, `excluded`...) ile; ayrıntı her zaman `reason` alanında.
+- `cleanCategories`: `skippedInUse` (EBUSY) ve `skippedNoAccess` (EPERM/EACCES) ayrı sayılır (FER-004).
+- Windows'ta elle doğrulanacaklar listesi: README.md › "Geliştiriciler için".
 - Hata biçimi her yerde `{ ok:false, error:'kod', message }`; `message` kullanıcının dil ayarına göre (tr/en).
   Kodlar: `src/core/errors.js`.
 - `listDrives()` `label` boş olabilir (Windows'ta etiketsiz sürücü). Linux'ta kök için `label:'Linux'`.

@@ -215,3 +215,32 @@ test('setDesktopEnabledText / parseDesktopEntry', () => {
   assert.equal(S.desktopEnabled(S.parseDesktopEntry(t2)), true);
   assert.equal(S.parseDesktopEntry('# yorum\n[Desktop Entry]\nName=Ad = Soyad\n').Name, 'Ad = Soyad');
 });
+
+test('FER-002: eşleşme alt dize değil, kelime sınırı ve exe adıyla', () => {
+  const unknown = [
+    ['TeamSpeak 3', '/opt/teamspeak3/ts3client_runscript.sh'],
+    ['Cooperative Notes', '/opt/coop/notes'],
+    ['ZoomIt', 'C:\\Tools\\ZoomIt64.exe'],
+    ['Benim Aracım', 'C:\\Games\\Steam\\steamapps\\common\\x\\tool.exe'], // klasör yolundaki "steam" sayılmaz
+    ['Upstream Sync', 'C:\\x\\sync.exe'],
+    ['Nvidiaish', 'C:\\x\\y.exe'],
+    ['Operator', 'C:\\Program Files\\Opera Software\\x.exe'],
+  ];
+  for (const [n, c] of unknown) assert.equal(S.matchKnown(n, c), null, `${n} bilinmiyor olmalı`);
+  const known = [
+    ['Discord', '/usr/bin/discord', 'safe-to-disable'],
+    ['Update', 'C:\\Users\\A\\AppData\\Local\\Discord\\Update.exe --processStart Discord.exe', 'safe-to-disable'],
+    ['Opera GX Stable', 'C:\\x\\launcher.exe', 'safe-to-disable'],
+    ['MicrosoftEdgeAutoLaunch_0F3A', '"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" --no-startup-window', 'safe-to-disable'],
+    ['Zoom', 'C:\\Users\\A\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe', 'safe-to-disable'],
+    ['NVIDIA GeForce Experience', 'C:\\x\\NVIDIA Share.exe', 'safe-to-disable'],
+    ['SecurityHealth', '%windir%\\system32\\SecurityHealthSystray.exe', 'keep'],
+    ['Origin', 'C:\\Program Files (x86)\\Origin\\Origin.exe', 'safe-to-disable'],
+  ];
+  for (const [n, c, adv] of known) {
+    const k = S.matchKnown(n, c, { windir: 'C:\\Windows' });
+    assert.ok(k, `${n} tanınmalı`);
+    assert.equal(k.advice, adv, n);
+  }
+  assert.deepEqual(S.commandExeNames('"C:\\a b\\Update.exe" --processStart Discord.exe'), ['update.exe', 'discord.exe']);
+});

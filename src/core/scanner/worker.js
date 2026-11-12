@@ -68,6 +68,11 @@ parentPort.on('message', async (msg) => {
         post({ type: 'reply', reqId: msg.reqId, result: i >= 0 ? tree.size[i] : null });
         return;
       }
+      case 'fileInfo': {
+        const i = tree ? tree.find(msg.path) : -1;
+        post({ type: 'reply', reqId: msg.reqId, result: i > 0 ? { isDir: tree.isDir(i), size: tree.size[i], mtimeMs: tree.mtime[i] } : null });
+        return;
+      }
       case 'remove': {
         const ok = tree ? msg.paths.map((p) => tree.remove(p)) : [];
         post({ type: 'reply', reqId: msg.reqId, result: ok });

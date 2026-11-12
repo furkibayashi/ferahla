@@ -31,6 +31,7 @@ const MESSAGES = {
   'busy': ['Başka bir temizlik sürüyor; bitmesini bekleyin.', 'Another cleanup is running; please wait for it to finish.'],
   'unsupported': ['Bu özellik bu işletim sisteminde kullanılamıyor.', 'This feature is not available on this operating system.'],
   'relaunch-failed': ['Ferahla yönetici olarak yeniden başlatılamadı. Ferahla\'yı sağ tıklayıp "Yönetici olarak çalıştır" ile açın.', 'Could not restart Ferahla as administrator. Right-click Ferahla and choose "Run as administrator".'],
+  'not_allowed': ['Bu öğe Geri Dönüşüm Kutusu\'na taşınmadı: yalnızca son taramada bulunan, o zamandan beri değişmemiş ve uygulama/tarayıcı verisi olmayan dosyalar taşınabilir. Gerekirse yeniden tarayın.', 'This item was not moved to the Recycle Bin: only files found in the last scan, unchanged since, and not app or browser data can be moved. Scan again if needed.'],
   'forbidden-sender': ['İzin verilmeyen istek.', 'Request not allowed.'],
   'internal': ['Beklenmeyen bir sorun oluştu. Uygulamayı yeniden başlatıp tekrar deneyin.', 'Something unexpected happened. Restart the app and try again.'],
 };

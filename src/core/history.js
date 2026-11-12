@@ -97,11 +97,13 @@ class History {
 
 // ---------- özet metinleri ----------
 
-function cleanSummary({ categories, deleted, freedBytes, skippedInUse }) {
+function cleanSummary({ categories, deleted, freedBytes, skippedInUse, skippedNoAccess = 0 }) {
   const tr = `Güvenli temizlik: ${categories} kategori, ${formatCount(deleted, 'tr')} dosya silindi (${formatBytes(freedBytes, 'tr')})` +
-    (skippedInUse ? `; ${formatCount(skippedInUse, 'tr')} dosya kullanımda olduğu için atlandı` : '');
+    (skippedInUse ? `; ${formatCount(skippedInUse, 'tr')} dosya kullanımda olduğu için atlandı` : '') +
+    (skippedNoAccess ? `; ${formatCount(skippedNoAccess, 'tr')} dosyaya erişim izni olmadığı için dokunulmadı` : '');
   const en = `Safe cleanup: ${categories} ${categories === 1 ? 'category' : 'categories'}, ${formatCount(deleted, 'en')} files removed (${formatBytes(freedBytes, 'en')})` +
-    (skippedInUse ? `; ${formatCount(skippedInUse, 'en')} files skipped because they were in use` : '');
+    (skippedInUse ? `; ${formatCount(skippedInUse, 'en')} ${skippedInUse === 1 ? 'file' : 'files'} skipped because ${skippedInUse === 1 ? 'it was' : 'they were'} in use` : '') +
+    (skippedNoAccess ? `; ${formatCount(skippedNoAccess, 'en')} ${skippedNoAccess === 1 ? 'file' : 'files'} left alone because of missing permission` : '');
   return { tr, en };
 }
 

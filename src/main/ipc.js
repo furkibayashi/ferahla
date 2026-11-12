@@ -11,7 +11,7 @@ const { pathToFileURL } = require('url');
 const safety = require('../core/safety');
 const cleanup = require('../core/cleanup');
 const startup = require('../core/startup');
-const { sizeOfPath } = require('../core/fswalk');
+const trashguard = require('../core/trashguard');
 const { errorResult, errorMessage, MESSAGES } = require('../core/errors');
 const { cleanSummary, trashSummary, startupSummary } = require('../core/history');
 
@@ -59,7 +59,7 @@ function registerIpc(d) {
     });
   }
 
-  const excludedForSearch = () => [...settings.get().excludedPaths, ...safety.systemDirs()];
+  const excludedForSearch = async () => [...settings.get().excludedPaths, ...safety.systemDirs(), ...(await protectedRoots())];
   const isAbsString = (p) => typeof p === 'string' && p.length > 0 && p.length < 32768 && !p.includes('\0') && path.isAbsolute(p);
 
   // ---------- olaylar ----------
@@ -107,7 +107,7 @@ function registerIpc(d) {
       minBytes: Number.isFinite(o.minBytes) ? o.minBytes : undefined,
       limit: Number.isFinite(o.limit) ? o.limit : undefined,
       types: Array.isArray(o.types) ? o.types.filter((t) => typeof t === 'string') : undefined,
-      excluded: excludedForSearch(),
+      excluded: await excludedForSearch(),
     });
     return r === null ? errorResult('no-scan', lang()) : r;
   });
@@ -116,7 +116,7 @@ function registerIpc(d) {
     const o = opts && typeof opts === 'object' ? opts : {};
     const r = await scanner.findDuplicates({
       minBytes: Number.isFinite(o.minBytes) ? o.minBytes : undefined,
-      excluded: excludedForSearch(),
+      excluded: await excludedForSearch(),
     });
     if (r === null) return errorResult('no-scan', lang());
     if (r.cancelled) return errorResult('cancelled', lang());
@@ -124,26 +124,36 @@ function registerIpc(d) {
   });
 
   // ---------- çöp kutusuna taşıma ----------
+  // Korumalı kökler: tarayıcı profilleri, temizlik kategorisi kökleri, Ferahla'nın kendi verisi ve kurulum klasörü,
+  // uygulama verisi (AppData, ~/.config ...). Bunların altındaki hiçbir şey trashItems ile taşınmaz.
+  const protectedRoots = () => trashguard.protectedTrashRoots({ platform, extra: d.appProtectedPaths || [] });
+
   handle('trashItems', async (paths) => {
     if (!Array.isArray(paths)) return errorResult('invalid-argument', lang());
     const list = [...new Set(paths)].slice(0, 20000);
     const failed = [];
     const trashedPaths = [];
     let freedBytes = 0;
-    const excludedPaths = settings.get().excludedPaths;
+    const last = scanner.lastScan;
+    const ctx = {
+      excludedPaths: settings.get().excludedPaths,
+      scanRoot: last && last.ok ? last.root : null,
+      lookup: (p) => scanner.fileInfo(p),
+      protectedRoots: await protectedRoots(),
+    };
     for (const p of list) {
-      const chk = safety.checkTrashable(p, { excludedPaths });
+      const chk = await trashguard.checkTrashRequest(p, ctx);
       if (!chk.ok) {
-        failed.push({ path: String(p), error: chk.reason, message: errorMessage(chk.reason, lang()) });
+        // Temel güvenlik reddi kendi koduyla (protected, system-path, dotdot, excluded...), kapsam reddi
+        // (taramada yok, klasör, değişmiş, uygulama verisi) 'not_allowed' ile döner; ayrıntı her zaman `reason`da.
+        const code = trashguard.SAFETY_REASONS.has(chk.reason) ? chk.reason : 'not_allowed';
+        failed.push({ path: String(p), error: code, reason: chk.reason, message: errorMessage(code, lang()) });
         continue;
       }
-      let size = null;
-      try { size = await scanner.sizeOf(p); } catch (e) { size = null; }
-      if (size === null) size = await sizeOfPath(chk.realPath);
       try {
         await shell.trashItem(chk.realPath);
         trashedPaths.push(p);
-        freedBytes += size || 0;
+        freedBytes += chk.size || 0;
       } catch (e) {
         failed.push({ path: p, error: 'trash-failed', message: errorMessage('trash-failed', lang()) });
       }
@@ -177,7 +187,7 @@ function registerIpc(d) {
       if (r.deleted > 0 || r.freedBytes > 0) {
         history.add({
           action: 'clean',
-          summary: cleanSummary({ categories: r.results.filter((x) => !x.error).length, deleted: r.deleted, freedBytes: r.freedBytes, skippedInUse: r.skippedInUse }),
+          summary: cleanSummary({ categories: r.results.filter((x) => !x.error).length, deleted: r.deleted, freedBytes: r.freedBytes, skippedInUse: r.skippedInUse, skippedNoAccess: r.skippedNoAccess }),
           freedBytes: r.freedBytes,
         });
       }

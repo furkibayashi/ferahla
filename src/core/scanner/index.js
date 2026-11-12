@@ -130,6 +130,8 @@ class ScanManager extends EventEmitter {
   /** Kopya arama ilerlemesi 'progress' olayıyla (phase: 'partial'|'full'|'done') yayınlanır. */
   findDuplicates(opts) { return this._query('findDuplicates', { opts }); }
   sizeOf(path) { return this._query('sizeOf', { path }); }
+  /** Son taramadaki düğüm bilgisi: { isDir, size, mtimeMs } ya da null. */
+  fileInfo(path) { return this._query('fileInfo', { path }); }
   removePaths(paths) { return this.current ? this._query('remove', { paths }) : Promise.resolve([]); }
   stats() { return this._query('stats', {}); }
 
