@@ -104,28 +104,67 @@ test('trashItems saldırıları: .., symlink kaçışı, test kökü, ev klasör
   expect(codes[path.join(sb.home, 'Haric', 'korunan.txt')]).toBe('excluded');
 });
 
-test('trashItems kapsamı: son taramada olmayan / kategori kökü / tarayıcı profili / uygulamanın kendi verisi / tüm klasör renderer’dan çöpe atılabiliyor mu?', async () => {
-  // Bu istekler korumalı alanın İÇİNDE; savunma derinliği açısından trashItems'ın neyi kabul ettiği kaydedilir.
+test('trashItems kapsamı (FER-001): yalnızca son taramada bulunan, değişmemiş, korumalı köklerin dışındaki DOSYALAR taşınır; hiçbir şey kaybolmaz', async () => {
+  // Hazırlık: ev klasörünü tara (tarayıcı profili, kategori kökü, belgeler taramaya dahil)
+  const docs = path.join(sb.home, 'Belgeler');
+  const izin = H.writeFile(path.join(docs, 'izinli.txt'), 1500, { fill: 'random' });
+  const degisecek = H.writeFile(path.join(docs, 'degisecek.txt'), 1500, { fill: 'random' });
+  const yerineBag = H.writeFile(path.join(docs, 'yerine-bag.txt'), 1500, { fill: 'random' });
+  const bagDosya = path.join(docs, 'bag-dosya');
+  if (!fs.existsSync(bagDosya)) fs.symlinkSync(path.join(sb.base, 'disarisi', 'gizli.txt'), bagDosya);
+  const d = await H.scanIPC(ctx.win, sb.home);
+  expect(d.ok).toBe(true);
+  // Taramadan SONRA: yeni dosya, değiştirilmiş dosya, dosyanın yerine symlink
+  const yeni = H.writeFile(path.join(docs, 'taramadan-sonra.txt'), 1500, { fill: 'random' });
+  fs.appendFileSync(degisecek, 'x');
+  fs.rmSync(yerineBag);
+  fs.symlinkSync(path.join(sb.base, 'disarisi', 'gizli.txt'), yerineBag);
   const targets = {
+    tarayiciProfiliKlasoru: path.join(sb.config, 'google-chrome'),
+    tarayiciCerezDosyasi: path.join(sb.config, 'google-chrome', 'Default', 'Cookies'),
+    tarayiciSifreDosyasi: path.join(sb.config, 'google-chrome', 'Default', 'Login Data'),
     kategoriKoku: path.join(sb.cache, 'thumbnails'),
-    tarayiciProfili: path.join(sb.config, 'google-chrome'),
-    uygulamaVerisi: sb.userData,
-    tumKlasor: path.join(sb.home, 'Belgeler', 'alt'),
+    kategoriIcindekiDosya: path.join(sb.cache, 'thumbnails', 'normal', 'k.png'),
+    uygulamaVerisiKlasoru: sb.userData,
+    uygulamaAyarDosyasi: path.join(sb.userData, 'settings.json'),
+    tumKlasor: path.join(docs, 'alt'),
+    taramadaOlmayanDosya: yeni,
+    taramadanSonraDegisen: degisecek,
+    yerineSymlinkKonan: yerineBag,
+    symlinkDosya: bagDosya,
     symlinkUzerindenDisari: path.join(sb.home, 'kacis-disari', 'gizli.txt'),
+    taramaDisiKardes: path.join(sb.base, 'disarisi', 'gizli.txt'),
   };
   for (const p of Object.values(targets)) expect(H.isInside(p, sb.base)).toBe(true);
-  const outsideBefore = H.snapshot(path.join(sb.base, 'disarisi'));
+  const before = H.snapshot(sb.base);
   const res = {};
   for (const [k, p] of Object.entries(targets)) {
     const r = await H.api(ctx.win, 'trashItems', [p]);
-    res[k] = { path: p, trashed: r.trashed, error: r.failed[0] && r.failed[0].error, stillExists: fs.existsSync(p) };
+    res[k] = { trashed: r.trashed, error: r.failed[0] && r.failed[0].error, reason: r.failed[0] && r.failed[0].reason, message: r.failed[0] && r.failed[0].message };
   }
   H.writeEvidence('sec-trash-scope.json', res);
   const accepted = Object.entries(res).filter(([, v]) => v.trashed > 0).map(([k]) => k);
-  // Beklenen (SPEC "Beyaz liste dışında hiçbir yol silinemez" + koordinatör kuralı): hepsi reddedilmeli
-  expect.soft(accepted, 'renderer bu yolları Geri Dönüşüm’e taşıyabildi').toEqual([]);
-  // En azından symlink'in gösterdiği dışarıdaki dosya ile ilgili kayıt
-  H.writeEvidence('sec-trash-scope-outside.json', { before: outsideBefore, after: H.snapshot(path.join(sb.base, 'disarisi')) });
+  expect(accepted, 'renderer bu yolları Geri Dönüşüm’e taşıyabildi').toEqual([]);
+  for (const [k, v] of Object.entries(res)) {
+    expect(v.error, k).toBeTruthy();
+    expect(v.message, k).toBeTruthy();
+  }
+  expect(H.snapshot(sb.base), 'reddedilen isteklerden sonra dosyalar değişti').toEqual(before);
+  // Olumlu kontrol: taranmış, değişmemiş bir belge taşınabilir (özellik hâlâ çalışıyor)
+  const ok = await H.api(ctx.win, 'trashItems', [izin]);
+  expect(ok).toMatchObject({ ok: true, trashed: 1 });
+  expect(fs.existsSync(izin)).toBe(false);
+  expect(H.ls(path.join(sb.trash, 'files'))).toContain('izinli.txt');
+  // userData taramanın İÇİNDE olsa bile korunur
+  const d2 = await H.scanIPC(ctx.win, sb.base);
+  expect(d2.ok).toBe(true);
+  const settingsFile = path.join(sb.userData, 'settings.json');
+  const sBefore = H.sha1(settingsFile);
+  const u = await H.api(ctx.win, 'trashItems', [settingsFile, path.join(sb.cache, 'thumbnails', 'normal', 'k.png')]);
+  H.writeEvidence('sec-trash-userdata-in-scan.json', u);
+  expect(u.trashed).toBe(0);
+  expect(u.failed.map((f) => f.reason)).toEqual(['protected-app-data', 'protected-app-data']);
+  expect(H.sha1(settingsFile)).toBe(sBefore);
 });
 
 test('renderer yalıtımı: require/process/Buffer yok; contextIsolation, sandbox açık; window.ferahla dondurulmuş', async () => {

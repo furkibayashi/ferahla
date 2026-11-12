@@ -149,7 +149,8 @@ test('Güvenli Temizlik (arayüz): Vazgeç → hiçbir şey silinmez; onayla →
     const r = await win.evaluate(() => window.__ferahlaUI.state.clean.result);
     H.writeEvidence('clean-result.json', r);
     const res = byId(r.results);
-    expect(res['user-temp']).toMatchObject({ freedBytes: ctx.capDrop ? 33000 : 37000, skippedInUse: ctx.capDrop ? 1 : 0 });
+    // FER-004 sonrası: izin yok (salt okunur) ≠ kullanımda
+    expect(res['user-temp']).toMatchObject({ freedBytes: ctx.capDrop ? 33000 : 37000, skippedNoAccess: ctx.capDrop ? 1 : 0, skippedInUse: 0 });
     expect(res.chrome.freedBytes).toBe(6 * MB + 6000 + 7000);
     if (ctx.capDrop) await expect(win.locator('.result .hint')).toContainText('1');
     const hist = await H.api(win, 'getHistory');

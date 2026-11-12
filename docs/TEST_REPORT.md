@@ -1,5 +1,46 @@
 # Ferahla — Test Raporu
 
+## Tur 2 — Son doğrulama (2026-11-12)
+
+**Test edilen sürüm:** `main` @ `362fd9c` (düzeltmeler `c810be7`, `8d61eec`, `9964e31`, `362fd9c`) · Electron 45.3.0.
+
+| | Test | Geçti | Kaldı |
+|---|---:|---:|---:|
+| Birim testleri (`npm test`, 0,5 sn) | 75 | 75 | 0 |
+| Uçtan uca, tam koşu 1 (`--workers=1`, 53 sn) | 27 | 27 | 0 |
+| Uçtan uca, tam koşu 2 (`--workers=2`, 42 sn) | 27 | 27 | 0 |
+| Yalnızca klavye temizlik testi `--repeat-each 5` | 5 | 5 | 0 |
+
+Kararsız test yok. `npm run test:e2e` artık depodaki `@playwright/test` 1.63.0 ile çalışıyor (yerel `node_modules/.bin/playwright`).
+
+**Test güncellemeleri:** `cleanup.spec.js` — salt okunur dosya artık `skippedNoAccess: 1, skippedInUse: 0` (FER-004).
+`security.spec.js` "trashItems kapsamı" testi FER-001 için genişletildi: ev klasörü taranır, taramadan sonra yeni dosya eklenir, bir dosya değiştirilir,
+bir dosyanın yerine symlink konur; 14 hedefin hiçbiri taşınmamalı, korumalı alanın anlık görüntüsü değişmemeli; ardından olumlu kontrol (taranmış,
+değişmemiş belge taşınır) ve userData taramanın içindeyken bile korunur.
+
+**Onaylanmış tasarım kararları (hata sayılmadı):** kapsam reddi `error:'not_allowed'` + `reason`; temel güvenlik reddi eski kodları
+(`protected`, `system-path`, `dotdot`, `excluded`) korur. Kullanıcı profili kökü korunur; Belgeler/İndirilenler/Masaüstü altındaki taranmış dosyalar
+taşınabilir; AppData/`.config`/`.cache`/`.local/share`, tarayıcı profilleri, kategori kökleri ve userData korunur.
+
+| ID | Önem | Durum | Kanıt (Tur 2) |
+|---|---|---|---|
+| FER-001 | Yüksek | **Doğrulandı** | 14 saldırının hepsi `not_allowed`: tarayıcı profili klasörü / `Cookies` / `Login Data` (`protected-app-data`), kategori kökü (`not-a-file`) ve içindeki dosya (`protected-app-data`), userData klasörü ve ayar dosyası (tarama içindeyken de `protected-app-data`), tüm klasör (`not-a-file`), taramada olmayan dosya (`not-in-scan`), taramadan sonra değişen (`changed-since-scan`), yerine symlink konan / symlink dosya (`not-a-file`), symlink üzerinden dışarı ve tarama dışı dosya (`not-in-scan`). Önce/sonra anlık görüntü birebir aynı; olumlu kontrol çalıştı (`sec-trash-scope.json`, `sec-trash-userdata-in-scan.json`). Tur 1 saldırı listesi de tamamen reddedildi. |
+| FER-002 | Orta | **Doğrulandı** | "TeamSpeak 3" ve "Cooperative Notes" → `unknown`; Discord/Slack `safe-to-disable`, OneDrive `keep` korunuyor (`startup-items.json`) |
+| FER-003 | Düşük | **Doğrulandı** | Göreli yol → "Bu yol geçerli değil. Tam klasör yolunu yazın (ör. C:\Oyunlar)." alan hatası, "Klasör eklendi" bildirimi yok, liste değişmedi (`settings-invalid-excluded.json`) |
+| FER-004 | Düşük | **Doğrulandı** | `skippedNoAccess: 1, skippedInUse: 0`; sonuç ekranında "1 dosyaya erişim izni yok, atlandı…" (`clean-result.json`, `clean-result-light.png`) |
+| FER-005 | Düşük | **Doğrulandı** | `@playwright/test` 1.63.0 `devDependencies`'te; `npm run test:e2e` yerel kurulumla iki tam koşuda geçti |
+
+**Açık hata:** yok.
+
+**Yayına hazır mı?** **Evet — Linux'ta otomatik olarak doğrulanabilen her alan için yayına hazır.** Açık hata yok; silme güvenliği
+(beyaz liste, symlink, kapsam, onay penceresi) saldırı senaryolarıyla kanıtlandı. Koşul: yayından önce aşağıdaki "Windows'ta elle doğrulanması
+gerekenler" listesi (ve README'deki Yazılımcı-2 listesi) gerçek bir Windows makinede geçmeli — özellikle gerçek Geri Dönüşüm Kutusu, kayıt defteri
+tabanlı başlangıç aç/kapat, yönetici/UAC akışı, junction/OneDrive yer tutucuları ve `%LOCALAPPDATA%` gerçek yollarıyla FER-001 kapsam kuralları.
+
+---
+
+## Tur 1 — İlk test (2026-11-12)
+
 **Test edilen sürüm:** `main` @ `33ddc00` (0.1.0) · **Tarih:** 2026-11-12 · **Test Edici:** Test Edici (Claude)
 **Ortam:** Linux konteyner (root, 4 çekirdek), Node 22, Electron 45.3.0, Playwright 1.63 (`_electron`), `xvfb-run -a`,
 deviceScaleFactor 1.
@@ -147,8 +188,7 @@ altındadır (geçici; testler yeniden çalıştırılınca aynı adlarla üreti
 
 ## Gözlemler (hata sayılmadı)
 - `docs/NOTES.md` "21 fonksiyon" diyor; SPEC ve preload 23 (`pickFolder`, `relaunchAsAdmin`) — not güncellenmeli.
-- Koordinatörün sözünü ettiği "Yazılımcı-2'nin NOTES.md'deki 10 maddelik Windows listesi" depoda (`33ddc00` ve geçmişte) bulunamadı;
-  aşağıdaki liste test edicinin kendi listesidir.
+- Tur 1'de Yazılımcı-2'nin Windows listesi depoda yoktu; `9964e31` ile README'ye 10 madde eklendi. Aşağıdaki liste test edicinin listesidir; ikisi birlikte uygulanmalı.
 - Kategori kökünün bir ATASI symlink/junction ise (ör. `~/.cache` başka bir diske bağlı) kök realpath ile çözülür ve oradaki içerik temizlenir. Bu,
   AppData'yı başka sürücüye taşıyan kullanıcılar için istenen davranış olabilir; kökün kendisi symlink ise doğru şekilde reddediliyor.
 - Linux'ta root olarak `isAdmin:true` döndüğü için yönetici rozeti/engeli e2e'de görülemedi (Windows'ta elle).
