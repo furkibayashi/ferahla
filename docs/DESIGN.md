@@ -59,7 +59,7 @@ Kimlik: *ferah, nefes alan* — bol boşluk, nane/deniz yeşili, yumuşak köşe
 - **Uygulama/tarayıcı açık:** satır devre dışı, amber not ("Önce Chrome'u kapatın…") + "Yeniden kontrol et".
 - **Atlananlar (sonuç ekranı):** iki ayrı, sakin not — `skippedInUse` → "17 dosya şu an kullanıldığı için atlandı. Bu normaldir…";
   `skippedNoAccess` → kilit simgesiyle "2 dosyaya erişim izni yok, atlandı. İsterseniz Ferahla'yı yönetici olarak açıp yeniden deneyebilirsiniz."
-  (yöneticiyken: "Windows tarafından korunuyor olabilir; sorun değil"). Alan yoksa 0 sayılır.
+  (yöneticiyken: "sistem tarafından korunuyor olabilir; sorun değil"). Alan yoksa 0 sayılır.
 - **Hariç klasör ekleme:** göreli yol hemen alan hatası alır; ana süreç yolu sessizce atarsa dönen ayarlardan anlaşılır ve
   "Bu klasör bulunamadı ya da yolu geçerli değil, eklenmedi…" denir (metin kutusu korunur, `role="alert"`). Başarıda "Klasör eklendi.".
 
