@@ -57,7 +57,11 @@ Kimlik: *ferah, nefes alan* — bol boşluk, nane/deniz yeşili, yumuşak köşe
   (`not-found`, `access-denied`, `scan-failed`) Türkçe cümleye çevrilir.
 - **Yönetici gerekli:** satır devre dışı, mavi "Yönetici izni gerekir" rozeti, kilit simgeli neden; sayfa başında nasıl yapılacağı.
 - **Uygulama/tarayıcı açık:** satır devre dışı, amber not ("Önce Chrome'u kapatın…") + "Yeniden kontrol et".
-- **Kullanımda atlananlar:** sonuçta "17 dosya şu an kullanıldığı için atlandı. Bu normaldir…".
+- **Atlananlar (sonuç ekranı):** iki ayrı, sakin not — `skippedInUse` → "17 dosya şu an kullanıldığı için atlandı. Bu normaldir…";
+  `skippedNoAccess` → kilit simgesiyle "2 dosyaya erişim izni yok, atlandı. İsterseniz Ferahla'yı yönetici olarak açıp yeniden deneyebilirsiniz."
+  (yöneticiyken: "Windows tarafından korunuyor olabilir; sorun değil"). Alan yoksa 0 sayılır.
+- **Hariç klasör ekleme:** göreli yol hemen alan hatası alır; ana süreç yolu sessizce atarsa dönen ayarlardan anlaşılır ve
+  "Bu klasör bulunamadı ya da yolu geçerli değil, eklenmedi…" denir (metin kutusu korunur, `role="alert"`). Başarıda "Klasör eklendi.".
 
 ## 5. Erişilebilirlik
 - Tam klavye: tüm eylemler gerçek `<button>`/`<input>`; görünür 2 px odak halkası (`:focus-visible`), "İçeriğe geç" bağlantısı,

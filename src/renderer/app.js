@@ -410,7 +410,11 @@
       return `<li><span>${esc(name)}</span><span class="${x.error ? 'muted' : 'num'}">${x.error ? esc(err) : esc(B(x.freedBytes || 0))}</span></li>`;
     }).join('');
     if (rows) html += `<ul class="card result-list">${rows}</ul>`;
-    if (r.skippedInUse > 0) html += `<p class="hint">${icon('info')}<span>${esc(t('result.inUse', { n: I.fmtNum(r.skippedInUse) }))}</span></p>`;
+    // skippedInUse = kilitli/meşgul dosyalar; skippedNoAccess = izin yok (eski ana süreçte alan yoksa 0 sayılır).
+    const inUse = Number(r.skippedInUse) || 0;
+    const noAccess = Number(r.skippedNoAccess) || 0;
+    if (inUse > 0) html += `<p class="hint">${icon('info')}<span>${esc(t('result.inUse', { n: I.fmtNum(inUse) }))}</span></p>`;
+    if (noAccess > 0) html += `<p class="hint">${icon('lock')}<span>${esc(t(state.info.isAdmin ? 'result.noAccessAdmin' : 'result.noAccess', { n: I.fmtNum(noAccess) }))}</span></p>`;
     if (r.error) html += errorCard(r.message || r.error);
     html += `<div class="result-actions"><button type="button" class="btn btn-primary" data-action="result-done" id="result-done">${esc(t('result.back'))}</button>
       <button type="button" class="btn btn-secondary" data-action="go" data-route="history" id="result-history">${icon('history')}${esc(t('result.history'))}</button></div></section>`;
@@ -1241,16 +1245,38 @@
     if (langChanged) applyLang();
     render();
   }
+  /** Ana süreçle aynı mantıkla karşılaştırma için: ayırıcıları birleştir, sondaki ayırıcıyı kırp, büyük/küçük harf duyarsız. */
+  const normPath = (p) => {
+    let n = String(p || '').trim().replace(/[\\/]+/g, '/');
+    if (n.length > 1 && !/^[a-z]:\/$/i.test(n)) n = n.replace(/\/+$/, '');
+    return n.toLowerCase();
+  };
+  const looksAbsolute = (p) => /^[a-z]:[\\/]/i.test(p) || /^[\\/]/.test(p);
   async function addExcluded(p) {
     const path = String(p || '').trim();
     const ex = state.settings.excludedPaths || [];
+    state.settingsDraft = path;
     if (!path) { state.settingsError = t('settings.errEmpty'); render(); return; }
-    if (ex.some((x) => x.toLowerCase() === path.toLowerCase())) { state.settingsError = t('settings.errDup'); render(); return; }
-    state.settingsError = ''; state.settingsDraft = '';
-    await saveSettings({ excludedPaths: ex.concat(path) });
+    if (ex.some((x) => normPath(x) === normPath(path))) { state.settingsError = t('settings.errDup'); render(); return; }
+    if (!looksAbsolute(path)) { state.settingsError = t('settings.errInvalid'); render(); focusExInput(); return; }
+    state.settingsError = '';
+    const r = await call('setSettings', { excludedPaths: ex.concat(path) });
+    if (isErr(r) || !r) { state.settingsError = (r && r.message) || t('settings.saveFailed'); render(); focusExInput(); return; }
+    state.settings = Object.assign({}, state.settings, r);
+    // Ana süreç geçersiz yolları sessizce atar: gerçekten eklendi mi, dönen listeden doğrula.
+    const added = (r.excludedPaths || []).some((x) => normPath(x) === normPath(path));
+    if (!added) {
+      state.settingsError = t('settings.errNotAdded');
+      render(); focusExInput();
+      announce(state.settingsError);
+      return;
+    }
+    state.settingsDraft = '';
+    render();
     toast(t('settings.added'));
-    const inp = $('#ex-input'); if (inp) inp.focus();
+    focusExInput();
   }
+  function focusExInput() { const inp = $('#ex-input'); if (inp) inp.focus(); }
 
   function wire() {
     $('#nav-list').addEventListener('click', (e) => {

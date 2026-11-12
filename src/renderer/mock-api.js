@@ -455,6 +455,12 @@
     async getSettings() { return clone(settings); },
     async setSettings(partial) {
       settings = Object.assign({}, settings, partial || {});
+      // Ana süreç (settings.sanitize) gibi: yalnızca mutlak yollar kalır, sondaki ayırıcı kırpılır; geçersizler sessizce atılır.
+      if (partial && Array.isArray(partial.excludedPaths)) {
+        settings.excludedPaths = [...new Set(partial.excludedPaths
+          .filter((p) => typeof p === 'string' && /^([a-z]:[\\/]|[\\/])/i.test(p) && !/[<>|"?*]/.test(p.slice(2)))
+          .map((p) => (p.length > 3 ? p.replace(/[\\/]+$/, '') : p)))];
+      }
       try { localStorage.setItem('ferahla.mock.settings', JSON.stringify(settings)); } catch (_) { /* yoksay */ }
       return clone(settings);
     },
@@ -588,25 +594,27 @@
     },
 
     async cleanCategories(ids = []) {
-      const results = []; let freedBytes = 0, deleted = 0, skippedInUse = 0;
+      const results = []; let freedBytes = 0, deleted = 0, skippedInUse = 0, skippedNoAccess = 0;
       for (const id of ids) {
         const c = categories.find((x) => x.id === id);
         if (!c || !c.available) { results.push({ id, freedBytes: 0, error: 'not-available' }); continue; }
         if (c.requiresAdmin && !opts.has('admin')) { results.push({ id, freedBytes: 0, error: 'requires-admin' }); continue; }
         for (let p = 0; p <= 100; p += 20) { emit('cleanProgress', { id, percent: p }); await wait(id === 'user-temp' ? 120 : 60); }
         let freed = c.sizeBytes;
-        if (id === 'user-temp') { freed = c.sizeBytes - 38 * MB; skippedInUse += 14; c.sizeBytes = 38 * MB; c.itemCount = 14; }
-        else if (id === 'discord') { freed = c.sizeBytes - 4 * MB; skippedInUse += 3; c.sizeBytes = 4 * MB; c.itemCount = 3; }
+        let inUse = 0, noAccess = 0;
+        if (id === 'user-temp') { freed = c.sizeBytes - 38 * MB; inUse = 14; noAccess = 2; c.sizeBytes = 38 * MB; c.itemCount = 16; }
+        else if (id === 'discord') { freed = c.sizeBytes - 4 * MB; inUse = 3; c.sizeBytes = 4 * MB; c.itemCount = 3; }
         else { c.sizeBytes = 0; deleted += c.itemCount; c.itemCount = 0; }
         freedBytes += freed; deleted += 200;
-        results.push({ id, freedBytes: freed });
+        skippedInUse += inUse; skippedNoAccess += noAccess;
+        results.push({ id, freedBytes: freed, skippedInUse: inUse, skippedNoAccess: noAccess });
       }
       extraFree['C:\\'] += freedBytes;
       if (freedBytes > 0) {
         const n = results.filter((r) => r.freedBytes > 0).length;
         addHistory({ action: 'clean', summary: L('Güvenli temizlik: ' + n + ' kategori temizlendi', 'Safe cleanup: ' + n + (n === 1 ? ' category' : ' categories') + ' cleaned'), freedBytes });
       }
-      return { ok: results.every((r) => !r.error), freedBytes, deleted, skippedInUse, results };
+      return { ok: results.every((r) => !r.error), freedBytes, deleted, skippedInUse, skippedNoAccess, results };
     },
 
     onCleanProgress: on('cleanProgress'),
